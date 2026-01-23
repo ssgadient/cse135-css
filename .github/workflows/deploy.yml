@@ -23,5 +23,5 @@ jobs:
       # Push to bare repo (triggers your post-receive hook)
       - name: Push to bare repo
         run: |
-          git remote add prod "ssh://deploy@cse135-css.site/var/repos/cse135-css.git" || true
+          git remote add prod "ssh://deploy@${{ secrets.DEPLOY_HOST }}/var/repos/cse135-css.git" || true
           git push -f prod main
