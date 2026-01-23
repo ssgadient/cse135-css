@@ -1,0 +1,27 @@
+name: Deploy to Prod
+
+on:
+  push:
+    branches:
+      - main  # or whichever branch you want to deploy
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout code
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Setup SSH agent
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.8.1
+        with:
+          ssh-private-key: ${{ secrets.SSH_DEPLOY_KEY }}
+
+      # Push to bare repo (triggers your post-receive hook)
+      - name: Push to bare repo
+        run: |
+          git remote add prod "ssh://deploy@cse135-css.site/var/repos/cse135-css.git" || true
+          git push -f prod main
