@@ -1,6 +1,2 @@
-# cse135-css
-Deployment test 2
-
-
-
-ch
+# CSE135 - Team CSS
+[Link to Page](https://www.cse135-css.site)
