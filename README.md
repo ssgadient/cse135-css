@@ -3,6 +3,7 @@
 https://www.cse135-css.site 
 
 **SSH Login and Site Access Credentials:** \
+Server IP: REDACTED \
 Username: REDACTED \
 Password: REDACTED
 
