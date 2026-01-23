@@ -10,22 +10,20 @@
 </head>
 
 <body>
-
   <!-- Fixed navigation bar -->
   <div class="top-nav">
     <a href="../index.html">← Back to Index</a>
   </div>
 
   <main class="content">
-
     <h1 id="about-me">About Me</h1>
 
     <img src="../assets/stefan.jpg" alt="Photo of Stefan Gadient">
 
     <p>
-      My name is Stefan Gadient, and I am a 2nd year undergraduate student majoring
+      My name is Stefan Gadient, and I am a 4th year undergraduate student majoring
       in computer science and applied mathematics. I am local to San Diego, and I am
-      looking forward to CSE110.
+      looking forward to CSE135.
     </p>
 
     <h2>Table of Contents</h2>
@@ -53,17 +51,21 @@
 
     <h2 id="time-at-ucsd">Time at UCSD</h2>
     <p>
-      During my freshman year, I competed in NCL and the Putnam exam while focusing
-      on systems programming and software development.
+      As a 4th year student, I have had the opportunity to explore various fields
+      of computer science and mathematics. Some of my favorite courses have been
+      CSE150B (which I tutor for) and CSE257, classes which deepened my understanding
+      of AI search and optimization algorithms. On the math side, I've enjoyed graph
+      theory and linear/non-linear optimization. I've been in a variety of clubs,
+      most notably IEEE, where I helped with RoboCup for a couple quarters.
     </p>
 
     <h2 id="future-goals">Future Goals</h2>
     <ul class="checklist">
       <li class="done">Research (EEG data at ACTRI)</li>
-      <li>Make a Chess AI</li>
-      <li>SWE Internship</li>
+      <li class="done">Make a Chess AI</li>
+      <li class="done">SWE Internship</li>
       <li>ML Internship</li>
-      <li>BS/MS Program @ UCSD</li>
+      <li class="done">BS/MS Program @ UCSD</li>
     </ul>
 
     <h2 id="hobbies">Hobbies</h2>
@@ -76,16 +78,29 @@
     <h2 id="miscellaneous">Miscellaneous</h2>
 
     <h3>Python Autoclicker</h3>
+    <p>
+      Below is a simple Python script I wrote to automate Cookie Clicker. It ended
+      up being quite useful during COVID to automatically get a slot for online
+      Costco deliveries.
+    </p>
+
     <pre><code>
-import pyautogui, time
-pyautogui.FAILSAFE = True
-time.sleep(5)
-while True:
-    pyautogui.click(1280, 711)
-    time.sleep(1.5)
+    import pyautogui
+    import time
+
+    pyautogui.FAILSAFE = True
+    time.sleep(5)
+
+    while True:
+        pyautogui.click(1280, 711)
+        time.sleep(1.5)
     </code></pre>
 
     <h3>Favorite Poem</h3>
+    <p>
+      Or rather, one of the few poems I remember.
+    </p>
+
     <blockquote>
       <p>
         Two roads diverged in a yellow wood,<br>
@@ -121,8 +136,6 @@ while True:
 
       <footer>— Robert Frost, <em>The Road Not Taken</em></footer>
     </blockquote>
-
   </main>
-
 </body>
 </html>
