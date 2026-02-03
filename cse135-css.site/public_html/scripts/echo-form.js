@@ -9,9 +9,9 @@ document.getElementById("echoForm").addEventListener("submit", function (e) {
 
   // Mapping to build the URL based on selection
   const extensions = {
-    "C++": "cgi",
-    "Python": "py",
-    "JSP": "jsp"
+    "cpp": "cgi",
+    "python": "py",
+    "jsp": "jsp"
   };
   
   // Dynamic URL based on language selection
