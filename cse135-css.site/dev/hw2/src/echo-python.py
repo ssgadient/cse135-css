@@ -1,37 +1,64 @@
-#!/usr/bin/python3
-import os, sys, json, datetime
-from urllib.parse import parse_qs
+#!/usr/bin/env python3
 
-print("Cache-Control: no-cache")
-print("Content-Type: application/json\n")
+import os
+import sys
+import time
+import socket
+import json
+import cgi
 
-method = os.environ.get("REQUEST_METHOD", "UNKNOWN")
-content_type = os.environ.get("CONTENT_TYPE", "")
-data = {}
+print("Content-type: text/html\r\n\r\n")
 
-# Read body if present
-if method in ["POST", "PUT", "DELETE"]:
-    length = int(os.environ.get("CONTENT_LENGTH", 0))
-    body = sys.stdin.read(length)
+def env(key):
+    return os.environ.get(key, "N/A")
 
-    if "application/json" in content_type:
+# --- Metadata ---
+real_method = env("REQUEST_METHOD")
+encoding    = env("CONTENT_TYPE")
+user_agent  = env("HTTP_USER_AGENT")
+remote_ip   = env("REMOTE_ADDR")
+hostname    = socket.gethostname()
+dt          = time.ctime()
+
+# --- Read input ---
+body = ""
+
+form = cgi.FieldStorage()
+
+# Method override (for PUT / DELETE via POST)
+intended_method = real_method
+if "_method" in form:
+    intended_method = form.getvalue("_method")
+
+if real_method == "GET":
+    body = env("QUERY_STRING")
+
+elif real_method == "POST":
+    if encoding.startswith("application/json"):
         try:
-            data = json.loads(body)
+            length = int(env("CONTENT_LENGTH"))
+            body = sys.stdin.read(length)
         except:
-            data = {"error": "Invalid JSON"}
+            body = ""
     else:
-        data = parse_qs(body)
-else:
-    data = parse_qs(os.environ.get("QUERY_STRING", ""))
+        pairs = []
+        for key in form:
+            if key != "_method":
+                pairs.append(f"{key}={form.getvalue(key)}")
+        body = "&".join(pairs)
 
-response = {
-    "method": method,
-    "content_type": content_type,
-    "received_data": data,
-    "time": datetime.datetime.now().isoformat(),
-    "hostname": os.environ.get("SERVER_NAME"),
-    "ip": os.environ.get("REMOTE_ADDR"),
-    "user_agent": os.environ.get("HTTP_USER_AGENT")
-}
+# DELETE intentionally has no body (matches C++)
+if intended_method == "DELETE":
+    body = ""
 
-print(json.dumps(response, indent=2))
+# --- Output ---
+print("Python Echo Endpoint")
+print("{")
+print(f"      Method:{intended_method}")
+print(f"      Hostname:{hostname}")
+print(f"      IP:{remote_ip}")
+print(f"      Time:{dt}")
+print(f"      Agent:{user_agent}")
+print(f"      Encoding:{encoding}")
+print(f"      Payload:{body if body else '[No Data]'}")
+print("}")
