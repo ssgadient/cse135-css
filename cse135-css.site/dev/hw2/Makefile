@@ -32,6 +32,10 @@ $(BIN_DIR)/%.cgi: $(SRC_DIR)/%.cpp
 
 compile: $(CPP_BINARIES)
 
+prune:
+	@echo "--- Removing stale symlinks ---"
+	@find $(PUB_CGI) -xtype l -delete
+
 deploy: prune
 	@echo "--- Deploying C++ Binaries ---"
 	@$(foreach bin,$(CPP_BINARIES), \
@@ -55,4 +59,4 @@ clean:
 		fi \
 	done
 
-.PHONY: all setup compile deploy clean
+.PHONY: all setup compile deploy clean prune
