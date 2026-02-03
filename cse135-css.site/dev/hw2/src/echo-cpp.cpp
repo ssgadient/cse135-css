@@ -31,8 +31,14 @@ int main() {
     }
 
     string body = "";
+    if (method == "DELETE") {
+        body = "";
+    }
+    else if (method == "GET") {
+        body = get_env("QUERY_STRING");
+    }
     // POST and PUT typically send data via Standard Input (stdin)
-    if (method == "POST" || method == "PUT") {
+    else if (method == "POST" || method == "PUT") {
         string content_length = get_env("CONTENT_LENGTH");
         if (content_length != "N/A" && !content_length.empty()) {
             int len = stoi(content_length);
@@ -40,14 +46,6 @@ int main() {
                 char c;
                 if (cin.get(c)) body += c;
             }
-        }
-    } 
-    
-    // If body is still empty (common for GET and DELETE), check QUERY_STRING
-    if (body.empty()) {
-        string query = get_env("QUERY_STRING");
-        if (query != "N/A") {
-            body = query;
         }
     }
 
