@@ -8,7 +8,10 @@
 
 <h1>Echo Test Form</h1>
 
-<form id="echoForm" action="hw2/cgi-bin/echo-python.py" method="get">
+<form id="echoForm"
+      action="/cgi-bin/echo-python.py"
+      method="get">
+
   <label>HTTP Method:</label>
   <select id="method">
     <option>GET</option>
@@ -32,39 +35,48 @@
   <button type="submit">Send</button>
 </form>
 
+<pre id="output"></pre>
+
 <script>
-document.getElementById("echoForm").addEventListener("submit", function(e) {
+document.getElementById("echoForm").addEventListener("submit", function (e) {
   e.preventDefault();
 
-  const method = document.getElementById("method").value;
+  const method   = document.getElementById("method").value;
   const encoding = document.getElementById("encoding").value;
-  const message = document.getElementById("message").value;
+  const message  = document.getElementById("message").value;
+  const output   = document.getElementById("output");
 
-  const url = "hw2/cgi-bin/echo-python.py";
+  const url = "/cgi-bin/echo-python.py";
 
   if (encoding === "json") {
     fetch(url, {
       method: method,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: message })
+      body: JSON.stringify({ message })
     })
     .then(r => r.text())
-    .then(t => document.body.innerHTML += `<pre>${t}</pre>`);
+    .then(t => output.textContent = t);
+
   } else {
-    const formData = new URLSearchParams({ message: message });
-    fetch(url + (method === "GET" ? "?" + formData : ""), {
-      method: method,
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: method === "GET" ? null : formData
-    })
+    const params = new URLSearchParams({ message });
+
+    fetch(
+      method === "GET" ? `${url}?${params}` : url,
+      {
+        method: method,
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: method === "GET" ? null : params
+      }
+    )
     .then(r => r.text())
-    .then(t => document.body.innerHTML += `<pre>${t}</pre>`);
+    .then(t => output.textContent = t);
   }
 });
 </script>
 
 <noscript>
-  <p><strong>JavaScript disabled:</strong> This form will submit using GET only.</p>
+  <p><strong>JavaScript disabled:</strong>
+     This form submits using GET with x-www-form-urlencoded data.</p>
 </noscript>
 
 </body>
