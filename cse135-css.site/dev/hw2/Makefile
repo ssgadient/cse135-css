@@ -11,6 +11,7 @@ PUB_CGI   = $(BASE_PATH)/public_html/hw2/cgi-bin
 # Find all .cpp and .pl files in the src directory
 CPP_SOURCES := $(wildcard $(SRC_DIR)/*.cpp)
 PL_SOURCES  := $(wildcard $(SRC_DIR)/*.pl)
+PY_SOURCES  := $(wildcard $(SRC_DIR)/*.py)
 
 # Define the resulting filenames in the bin and public folders
 # cpp-hello.cpp -> cpp-hello.cgi
@@ -19,6 +20,9 @@ CPP_TARGETS  := $(patsubst $(SRC_DIR)/%.cpp, $(PUB_CGI)/%.cgi, $(CPP_SOURCES))
 
 # perl-hello.pl -> perl-hello.pl (just the name for the symlink)
 PL_TARGETS   := $(patsubst $(SRC_DIR)/%.pl, $(PUB_CGI)/%.pl, $(PL_SOURCES))
+
+# python-hello.py -> python-hello.py (symlink for CGI)
+PY_TARGETS := $(patsubst $(SRC_DIR)/%.py, $(PUB_CGI)/%.py, $(PY_SOURCES))
 
 # --- RULES ---
 
@@ -61,11 +65,18 @@ deploy: prune
 		ln -sf $$src $$DEST; \
 		echo "Linked $$NAME -> $(PUB_CGI)"; \
 	done
-
+	@echo "--- Deploying Python Scripts ---"
+	@for src in $(PY_SOURCES); do \
+		NAME=$$(basename $$src); \
+		DEST=$(PUB_CGI)/$$NAME; \
+		chmod +x $$src; \
+		ln -sf $$src $$DEST; \
+		echo "Linked $$NAME -> $(PUB_CGI)"; \
+	done
 clean:
 	@echo "Cleaning binaries and local symlinks..."
 	@rm -f $(BIN_DIR)/*.cgi
-	@for t in $(CPP_TARGETS) $(PL_TARGETS); do \
+	@for t in $(CPP_TARGETS) $(PL_TARGETS) $(PY_TARGETS); do \
 		if [ -L "$$t" ] && [[ "$$(readlink -f $$t)" == $(DEV_DIR)* ]]; then \
 			rm -f $$t; \
 		fi \

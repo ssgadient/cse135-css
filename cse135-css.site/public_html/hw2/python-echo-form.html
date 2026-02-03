@@ -8,7 +8,7 @@
 
 <h1>Echo Test Form</h1>
 
-<form id="echoForm" action="/cgi-bin/echo-python.py" method="get">
+<form id="echoForm" action="hw2/cgi-bin/echo-python.py" method="get">
   <label>HTTP Method:</label>
   <select id="method">
     <option>GET</option>
@@ -40,7 +40,7 @@ document.getElementById("echoForm").addEventListener("submit", function(e) {
   const encoding = document.getElementById("encoding").value;
   const message = document.getElementById("message").value;
 
-  const url = "/cgi-bin/echo-python.py";
+  const url = "hw2/cgi-bin/echo-python.py";
 
   if (encoding === "json") {
     fetch(url, {
