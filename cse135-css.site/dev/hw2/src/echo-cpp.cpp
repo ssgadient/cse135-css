@@ -52,7 +52,7 @@ int main() {
     cout << "      <li><b>Method:</b> "   << method     << "</li>\n";
     cout << "      <li><b>Hostname:</b> " << hostname   << "</li>\n";
     cout << "      <li><b>IP:</b> "       << remote_ip   << "</li>\n";
-    cout << "      <li><b>Time:</b> "     << dt          << "</li>\n";
+    cout << "      <li><b>Time:</b> "     << dt          << "</li>";
     cout << "      <li><b>Agent:</b> "    << user_agent  << "</li>\n";
     cout << "      <li><b>Encoding:</b> " << encoding    << "</li>\n";
     cout << "    </ul>\n";
