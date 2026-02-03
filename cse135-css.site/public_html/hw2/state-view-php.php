@@ -1,5 +1,17 @@
+#!/usr/bin/php
 <?php
 session_start();
-header('Content-Type: application/json');
+echo "Content-Type: text/html\r\n\r\n";
 
-echo json_encode($_SESSION, JSON_PRETTY_PRINT);
+$data = $_SESSION['data'] ?? 'No data saved yet';
+?>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>State View</title>
+</head>
+<body>
+    <h1>Stored Data:</h1>
+    <p><?= htmlspecialchars($data) ?></p>
+</body>
+</html>
