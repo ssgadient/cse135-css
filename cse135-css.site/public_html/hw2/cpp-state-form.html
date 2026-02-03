@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>State Collection</title>
+</head>
+<body>
+    <h1>Identify Yourself</h1>
+    <p>This data will be stored in a <b>server-side file</b> linked to your Cookie ID.</p>
+    
+    <form action="/cgi-bin/state-cpp.cgi" method="POST">
+        <input type="hidden" name="action" value="save">
+        
+        <label for="username">Enter your Name:</label>
+        <input type="text" id="username" name="username" required>
+        
+        <button type="submit">Save to Session</button>
+    </form>
+
+    <br>
+    <a href="/cgi-bin/state-cpp.cgi">View Current Session Data</a>
+</body>
+</html>

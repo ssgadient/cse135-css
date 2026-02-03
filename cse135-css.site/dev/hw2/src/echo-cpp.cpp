@@ -58,7 +58,7 @@ int main() {
     cout << "      Time:"     << dt          << "\n";
     cout << "      Agent:"    << user_agent  << "\n";
     cout << "      Encoding:" << encoding    << "\n";
-    cout << "      Message:" << (body.empty() ? "[No Data]" : body) << "\n";
+    cout << "      Payload:" << (body.empty() ? "[No Data]" : body) << "\n";
     cout << "}\n";
 
     return 0;
