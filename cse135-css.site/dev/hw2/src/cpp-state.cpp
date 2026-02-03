@@ -79,8 +79,8 @@ int main() {
     
     cout << "<nav>\n"
          << "  <a href='../cpp-state-form.html'>Change Name</a> | \n"
-         << "  <a href='state-cpp.cgi'>Refresh This Page</a> | \n"
-         << "  <a href='state-cpp.cgi?action=clear'>Clear Data (Destroy Session)</a>\n"
+         << "  <a href='cpp-state.cgi'>Refresh This Page</a> | \n"
+         << "  <a href='cpp-state.cgi?action=clear'>Clear Data (Destroy Session)</a>\n"
          << "</nav>\n";
     
     cout << "</body></html>" << endl;
