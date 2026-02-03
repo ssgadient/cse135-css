@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>State Collection</title>
+    <script src="https://cdn.logr-in.com/LogRocket.min.js" crossorigin="anonymous"></script>
+    <script>window.LogRocket && window.LogRocket.init('rfmscq/cse135-css');</script>
+</head>
+<body>
+    <h1>Identify Yourself</h1>
+    <p>This data will be stored in a <b>server-side file</b> linked to your Cookie ID.</p>
+    
+    <form action="/hw2/cgi-bin/cpp-state.cgi" method="POST">
+        <input type="hidden" name="action" value="save">
+        
+        <label for="username">Enter your Name:</label>
+        <input type="text" id="username" name="username" required>
+        
+        <button type="submit">Save to Session</button>
+    </form>
+
+    <br>
+    <a href="cpp-state-view.html">View Current Session Data</a>
+    <a href="../index.html">Home</a>
+</body>
+</html>

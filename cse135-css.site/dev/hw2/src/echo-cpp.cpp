@@ -26,36 +26,40 @@ int main() {
 
     time_t now = time(0);
     string dt = ctime(&now);
+    if (!dt.empty() && dt.back() == '\n') {
+        dt.pop_back(); // Removes the trailing newline from ctime
+    }
 
-    // Read the Body for POST and PUT
     string body = "";
-    if (method == "POST" || method == "PUT") {
+    if (method == "DELETE") {
+        body = "";
+    }
+    else if (method == "GET") {
+        body = get_env("QUERY_STRING");
+    }
+    // POST and PUT typically send data via Standard Input (stdin)
+    else if (method == "POST" || method == "PUT") {
         string content_length = get_env("CONTENT_LENGTH");
-        if (content_length != "N/A") {
+        if (content_length != "N/A" && !content_length.empty()) {
             int len = stoi(content_length);
             for (int i = 0; i < len; ++i) {
                 char c;
                 if (cin.get(c)) body += c;
             }
         }
-    } else {
-        // For GET and DELETE, data is usually in the QUERY_STRING
-        body = get_env("QUERY_STRING");
     }
 
     // Output Response
-    cout << "<html><body>";
-    cout << "<h1>C++ Echo Endpoint</h1><hr>";
-    cout << "<ul>";
-    cout << "<li><b>Method:</b> " << method << "</li>";
-    cout << "<li><b>Hostname:</b> " << hostname << "</li>";
-    cout << "<li><b>IP:</b> " << remote_ip << "</li>";
-    cout << "<li><b>Time:</b> " << dt << "</li>";
-    cout << "<li><b>Agent:</b> " << user_agent << "</li>";
-    cout << "<li><b>Encoding:</b> " << encoding << "</li>";
-    cout << "</ul>";
-    cout << "<h3>Payload:</h3><pre>" << (body.empty() ? "[No Data]" : body) << "</pre>";
-    cout << "</body></html>";
+    cout << "C++ Echo Endpoint\n";
+    cout << "{\n";
+    cout << "      Method:"   << method     << "\n";
+    cout << "      Hostname:" << hostname   << "\n";
+    cout << "      IP:"       << remote_ip   << "\n";
+    cout << "      Time:"     << dt          << "\n";
+    cout << "      Agent:"    << user_agent  << "\n";
+    cout << "      Encoding:" << encoding    << "\n";
+    cout << "      Payload:" << (body.empty() ? "[No Data]" : body) << "\n";
+    cout << "}\n";
 
     return 0;
 }
