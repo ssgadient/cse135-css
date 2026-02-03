@@ -50,22 +50,16 @@ int main() {
     }
 
     // Output Response
-    cout << "<html>\n";
-    cout << "  <body>\n";
-    cout << "    <h1>C++ Echo Endpoint</h1>\n";
-    cout << "    <hr>\n";
-    cout << "    <ul>\n";
-    cout << "      <li><b>Method:</b> "   << method     << "</li>\n";
-    cout << "      <li><b>Hostname:</b> " << hostname   << "</li>\n";
-    cout << "      <li><b>IP:</b> "       << remote_ip   << "</li>\n";
-    cout << "      <li><b>Time:</b> "     << dt          << "</li>\n";
-    cout << "      <li><b>Agent:</b> "    << user_agent  << "</li>\n";
-    cout << "      <li><b>Encoding:</b> " << encoding    << "</li>\n";
-    cout << "    </ul>\n";
-    cout << "    <h3>Payload:</h3>\n";
-    cout << "    <pre>" << (body.empty() ? "[No Data]" : body) << "</pre>\n";
-    cout << "  </body>\n";
-    cout << "</html>" << endl;
+    cout << "C++ Echo Endpoint\n";
+    cout << "{\n";
+    cout << "      Method:"   << method     << "\n";
+    cout << "      Hostname:" << hostname   << "\n";
+    cout << "      IP:"       << remote_ip   << "\n";
+    cout << "      Time:"     << dt          << "\n";
+    cout << "      Agent:"    << user_agent  << "\n";
+    cout << "      Encoding:" << encoding    << "\n";
+    cout << "      Message:" << (body.empty() ? "[No Data]" : body) << "\n";
+    cout << "}\n";
 
     return 0;
 }
