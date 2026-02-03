@@ -12,81 +12,50 @@
   </script>
   <meta charset="UTF-8">
   <title>Echo Test Form</title>
+  <script src="../scripts/echo-form.js" defer></script>
 </head>
 <body>
 
 <h1>Echo Test Form</h1>
 
-<form id="echoForm"
-      action="/hw2/cgi-bin/echo-python.py"
-      method="get">
+<form id="echoForm" action="/hw2/cgi-bin/echo-python.py" method="POST">
+  <label for="language">Language:</label>
+  <select id="language">
+    <option value="python">Python</option>
+    <option value="cpp">C++</option>
+    <option value="jsp">JSP</option>
+  </select>
+  <br><br>
 
-  <label>HTTP Method:</label>
+  <label for="method">HTTP Method:</label>
   <select id="method">
-    <option>GET</option>
-    <option>POST</option>
-    <option>PUT</option>
-    <option>DELETE</option>
+    <option value="GET">GET</option>
+    <option value="POST" selected>POST</option>
+    <option value="PUT">PUT</option>
+    <option value="DELETE">DELETE</option>
   </select>
   <br><br>
 
-  <label>Encoding:</label>
+  <label for="encoding">Encoding:</label>
   <select id="encoding">
-    <option value="form">x-www-form-urlencoded</option>
-    <option value="json">application/json</option>
+    <option value="application/x-www-form-urlencoded">x-www-form-urlencoded</option>
+    <option value="application/json">application/json</option>
   </select>
   <br><br>
 
-  <label>Message:</label>
+  <label for="message">Message:</label>
   <input type="text" id="message" name="message">
   <br><br>
 
   <button type="submit">Send</button>
 </form>
 
-<pre id="output"></pre>
-
-<script>
-document.getElementById("echoForm").addEventListener("submit", function (e) {
-  e.preventDefault();
-
-  const method   = document.getElementById("method").value;
-  const encoding = document.getElementById("encoding").value;
-  const message  = document.getElementById("message").value;
-  const output   = document.getElementById("output");
-
-  const url = "/hw2/cgi-bin/echo-python.py";
-
-  if (encoding === "json") {
-    fetch(url, {
-      method: method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message })
-    })
-    .then(r => r.text())
-    .then(t => output.textContent = t);
-
-  } else {
-    const params = new URLSearchParams({ message });
-
-    fetch(
-      method === "GET" ? `${url}?${params}` : url,
-      {
-        method: method,
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: method === "GET" ? null : params
-      }
-    )
-    .then(r => r.text())
-    .then(t => output.textContent = t);
-  }
-});
-</script>
-
 <noscript>
-  <p><strong>JavaScript disabled:</strong>
-     This form submits using GET with x-www-form-urlencoded data.</p>
+  <hr>
+  <p style="color: red;"><strong>JavaScript disabled:</strong> The form will default to the Python endpoint using standard POST.</p>
 </noscript>
+
+<div id="responseContainer"></div>
 
 </body>
 </html>
