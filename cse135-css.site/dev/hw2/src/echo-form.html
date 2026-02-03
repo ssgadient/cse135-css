@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Echo Test Form</title>
+</head>
+<body>
+
+<h1>Echo Test Form</h1>
+
+<form id="echoForm" action="/cgi-bin/echo-python.py" method="get">
+  <label>HTTP Method:</label>
+  <select id="method">
+    <option>GET</option>
+    <option>POST</option>
+    <option>PUT</option>
+    <option>DELETE</option>
+  </select>
+  <br><br>
+
+  <label>Encoding:</label>
+  <select id="encoding">
+    <option value="form">x-www-form-urlencoded</option>
+    <option value="json">application/json</option>
+  </select>
+  <br><br>
+
+  <label>Message:</label>
+  <input type="text" id="message" name="message">
+  <br><br>
+
+  <button type="submit">Send</button>
+</form>
+
+<script>
+document.getElementById("echoForm").addEventListener("submit", function(e) {
+  e.preventDefault();
+
+  const method = document.getElementById("method").value;
+  const encoding = document.getElementById("encoding").value;
+  const message = document.getElementById("message").value;
+
+  const url = "/cgi-bin/echo-python.py";
+
+  if (encoding === "json") {
+    fetch(url, {
+      method: method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: message })
+    })
+    .then(r => r.text())
+    .then(t => document.body.innerHTML += `<pre>${t}</pre>`);
+  } else {
+    const formData = new URLSearchParams({ message: message });
+    fetch(url + (method === "GET" ? "?" + formData : ""), {
+      method: method,
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: method === "GET" ? null : formData
+    })
+    .then(r => r.text())
+    .then(t => document.body.innerHTML += `<pre>${t}</pre>`);
+  }
+});
+</script>
+
+<noscript>
+  <p><strong>JavaScript disabled:</strong> This form will submit using GET only.</p>
+</noscript>
+
+</body>
+</html>

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Save State</title>
+</head>
+<body>
+
+<h1>Save State</h1>
+
+<form action="/cgi-bin/state-python.py" method="get">
+  <input type="hidden" name="action" value="save">
+  <label>Value to save:</label>
+  <input type="text" name="value">
+  <button type="submit">Save</button>
+</form>
+
+<p><a href="state-view.html">View saved state</a></p>
+
+</body>
+</html>
