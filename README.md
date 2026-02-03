@@ -22,3 +22,7 @@ The html file now has a header Content-Encoding: gzip and the number of bytes is
 
 **Summary of removing 'server' header:** \
 We removed the server header by installing a mod_security package, which allowed for a custom server name to be installed. We were unable to use Header set Server since the server header is protected by Apache. After a lot of configurations to mod_security file, we got the Server header to switch for html files, but any css or js files still leak info about the server. 
+
+## Homework 2
+
+Approach 3: Free Choice Discussion - In evaluating Userpilot’s reporting and analytics, I considered the types of data available, including user engagement metrics, feature adoption, and onboarding completion rates, as well as whether the platform provides real-time insights for product decision-making. I chose this service because it offers comprehensive visibility into user behavior, pre-built dashboards that track adoption and engagement, and professional support to help optimize user experiences. During the evaluation, I explored the Feature Adoption dashboard, noting how actions are categorized and visualized, and found the charts and graphs intuitive and actionable. Overall, the service provided clear, real-time insights that help identify friction points, monitor user activity, and make data-driven decisions, making it a valuable tool for improving product adoption and user success.
