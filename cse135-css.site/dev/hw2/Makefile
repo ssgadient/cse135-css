@@ -32,31 +32,19 @@ $(BIN_DIR)/%.cgi: $(SRC_DIR)/%.cpp
 
 compile: $(CPP_BINARIES)
 
-deploy:
+deploy: prune
 	@echo "--- Deploying C++ Binaries ---"
-	@for bin in $(CPP_BINARIES); do \
-		NAME=$$(basename $$bin); \
-		DEST=$(PUB_CGI)/$$NAME; \
-		chmod 755 $$bin; \
-		if [ -L "$$DEST" ] && [ "$$(readlink -f $$DEST)" != "$$(readlink -f $$bin)" ]; then \
-			echo "SKIP: $$NAME is owned by another project"; \
-		else \
-			ln -sf $$bin $$DEST; \
-			echo "Linked $$NAME -> $(PUB_CGI)"; \
-		fi \
-	done
+	@$(foreach bin,$(CPP_BINARIES), \
+		chmod 755 $(bin); \
+		ln -sf $(bin) $(PUB_CGI)/$(notdir $(bin)); \
+		echo "Linked $(notdir $(bin))"; \
+	)
 	@echo "--- Deploying Perl Scripts ---"
-	@for src in $(PL_SOURCES); do \
-		NAME=$$(basename $$src); \
-		DEST=$(PUB_CGI)/$$NAME; \
-		chmod +x $$src; \
-		if [ -L "$$DEST" ] && [ "$$(readlink -f $$DEST)" != "$$(readlink -f $$src)" ]; then \
-			echo "SKIP: $$NAME is owned by another project"; \
-		else \
-			ln -sf $$src $$DEST; \
-			echo "Linked $$NAME -> $(PUB_CGI)"; \
-		fi \
-	done
+	@$(foreach src,$(PL_SOURCES), \
+		chmod +x $(src); \
+		ln -sf $(src) $(PUB_CGI)/$(notdir $(src)); \
+		echo "Linked $(notdir $(src))"; \
+	)
 
 clean:
 	@echo "Cleaning binaries and local symlinks..."
