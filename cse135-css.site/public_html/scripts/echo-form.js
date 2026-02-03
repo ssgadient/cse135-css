@@ -24,7 +24,17 @@ document.getElementById("echoForm").addEventListener("submit", function (e) {
       body: JSON.stringify({ message })
     })
     .then(r => r.text())
-    .then(t => output.textContent = t);
+    .then(t => {
+        try {
+            // This is the "Import" equivalent in JS
+            const jsonObj = JSON.parse(t); 
+            // stringify(object, replacer, indentation_spaces)
+            output.textContent = JSON.stringify(jsonObj, null, 4); 
+        } catch (e) {
+            // If the C++ output wasn't valid JSON, just show the raw text
+            output.textContent = t;
+        }
+    });
 
   } else {
     const params = new URLSearchParams({ message });
