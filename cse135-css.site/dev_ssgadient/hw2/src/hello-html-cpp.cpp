@@ -18,7 +18,7 @@ int main() {
     cout << "</head>\n";
     cout << "<body>\n";
 
-    cout << "<h1 align=\"center\">Hello HTML World</h1><hr/>\n";
+    cout << "<h1 align=\"center\">Hello HTML World (with C++)</h1><hr/>\n";
     cout << "<p>Hello HTML World!</p>\n";
     cout << "<p>This page was generated with the C++ programming language and by the Team CSS</p>\n";
 
