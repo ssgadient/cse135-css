@@ -1,3 +1,5 @@
+SHELL := /bin/bash
+
 # --- PATHS ---
 BASE_PATH = /var/www/cse135-css.site
 DEV_DIR   = $(BASE_PATH)/dev/hw2
@@ -36,19 +38,29 @@ prune:
 	@echo "--- Removing stale symlinks ---"
 	@find $(PUB_CGI) -xtype l -delete
 
+# Rule to compile and immediately set permissions
+$(BIN_DIR)/%.cgi: $(SRC_DIR)/%.cpp
+	g++ -Wall -O2 $< -o $@
+	chmod 755 $@
+
+compile: $(CPP_BINARIES)
+
 deploy: prune
 	@echo "--- Deploying C++ Binaries ---"
-	@$(foreach bin,$(CPP_BINARIES), \
-		chmod 755 $(bin); \
-		ln -sf $(bin) $(PUB_CGI)/$(notdir $(bin)); \
-		echo "Linked $(notdir $(bin))"; \
-	)
+	@for bin in $(CPP_BINARIES); do \
+		NAME=$$(basename $$bin); \
+		DEST=$(PUB_CGI)/$$NAME; \
+		ln -sf $$bin $$DEST; \
+		echo "Linked $$NAME -> $(PUB_CGI)"; \
+	done
 	@echo "--- Deploying Perl Scripts ---"
-	@$(foreach src,$(PL_SOURCES), \
-		chmod +x $(src); \
-		ln -sf $(src) $(PUB_CGI)/$(notdir $(src)); \
-		echo "Linked $(notdir $(src))"; \
-	)
+	@for src in $(PL_SOURCES); do \
+		NAME=$$(basename $$src); \
+		DEST=$(PUB_CGI)/$$NAME; \
+		chmod +x $$src; \
+		ln -sf $$src $$DEST; \
+		echo "Linked $$NAME -> $(PUB_CGI)"; \
+	done
 
 clean:
 	@echo "Cleaning binaries and local symlinks..."
