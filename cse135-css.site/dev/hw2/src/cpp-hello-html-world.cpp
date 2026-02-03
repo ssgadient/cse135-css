@@ -19,7 +19,7 @@ int main() {
     cout << "<body>\n";
 
     cout << "<h1 align=\"center\">Hello HTML World (with C++)</h1><hr/>\n";
-    cout << "<p>Hello HTML World!</p>\n";
+    cout << "<p>Hello HTML World! - Christian, Sophie and Stefan</p>\n";
     cout << "<p>This page was generated with the C++ programming language and by the Team CSS</p>\n";
 
     // 3. Get the current time
