@@ -26,21 +26,29 @@ int main() {
 
     time_t now = time(0);
     string dt = ctime(&now);
+    if (!dt.empty() && dt.back() == '\n') {
+        dt.pop_back(); // Removes the trailing newline from ctime
+    }
 
-    // Read the Body for POST and PUT
     string body = "";
+    // POST and PUT typically send data via Standard Input (stdin)
     if (method == "POST" || method == "PUT") {
         string content_length = get_env("CONTENT_LENGTH");
-        if (content_length != "N/A") {
+        if (content_length != "N/A" && !content_length.empty()) {
             int len = stoi(content_length);
             for (int i = 0; i < len; ++i) {
                 char c;
                 if (cin.get(c)) body += c;
             }
         }
-    } else {
-        // For GET and DELETE, data is usually in the QUERY_STRING
-        body = get_env("QUERY_STRING");
+    } 
+    
+    // If body is still empty (common for GET and DELETE), check QUERY_STRING
+    if (body.empty()) {
+        string query = get_env("QUERY_STRING");
+        if (query != "N/A") {
+            body = query;
+        }
     }
 
     // Output Response
@@ -52,7 +60,7 @@ int main() {
     cout << "      <li><b>Method:</b> "   << method     << "</li>\n";
     cout << "      <li><b>Hostname:</b> " << hostname   << "</li>\n";
     cout << "      <li><b>IP:</b> "       << remote_ip   << "</li>\n";
-    cout << "      <li><b>Time:</b> "     << dt          << "</li>";
+    cout << "      <li><b>Time:</b> "     << dt          << "</li>\n";
     cout << "      <li><b>Agent:</b> "    << user_agent  << "</li>\n";
     cout << "      <li><b>Encoding:</b> " << encoding    << "</li>\n";
     cout << "    </ul>\n";
