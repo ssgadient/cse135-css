@@ -12,6 +12,10 @@ try {
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     $jsonInput = file_get_contents('php://input');
+
+    // Debugging
+    file_put_contents('raw_log.txt', "--- START ---\n" . $jsonInput . "\n--- END ---\n", FILE_APPEND);
+
     $data = json_decode($jsonInput, true);
 
     if (!$data) {

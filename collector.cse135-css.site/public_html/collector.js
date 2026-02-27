@@ -9,7 +9,7 @@ function getSessionID() {
 }
 
 const SESSION_ID = getSessionID();
-const ENDPOINT = "https://collector.cse135-css.site/collect";
+const ENDPOINT = "https://collector.cse135-css.site/collect/";
 
 // SEND FUNCTION
 function sendData(type, data) {
