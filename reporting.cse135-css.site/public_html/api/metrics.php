@@ -108,7 +108,7 @@ if ($method === "GET") {
     // If querying specific ID, return single object
     if ($id !== null) {
         if (count($results) === 0)
-            respond(["error"=>"Not found"],404);
+            respond(["error"=>"Fetch failed. Could not find metric with ID: $id"],404);
 
         respond($results[0]);
     }
@@ -207,8 +207,9 @@ if ($method === "DELETE") {
 
     $stmt->execute([$id]);
 
-    if ($stmt->rowCount() === 0)
-        respond(["error"=>"Not found"],404);
+    if ($stmt->rowCount() === 0) {
+        respond(["error"=>"Delete failed. Could not find metric with ID: $id"],404);
+    }
 
     respond(["message"=>"Deleted successfully"]);
 }
