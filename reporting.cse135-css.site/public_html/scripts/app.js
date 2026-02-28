@@ -232,46 +232,70 @@ if (manualForm) {
   manualForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
+    // Identify the current operation based on the button text
+    const submitBtn = document.querySelector('.btn-submit');
+    const mode = submitBtn.textContent.split(' ')[0].toLowerCase(); // "save", "update", or "delete"
+    
+    const id = document.getElementById('m_id').value;
     const dataInput = document.getElementById('m_data').value;
     let parsedData = {};
 
-    // Validate JSON input
-    try {
-      if (dataInput.trim() !== "") {
-        parsedData = JSON.parse(dataInput);
+    // Validate JSON only for Save/Update
+    if (mode !== 'delete') {
+      try {
+        if (dataInput.trim() !== "") {
+          parsedData = JSON.parse(dataInput);
+        }
+      } catch (err) {
+        alert("Invalid JSON format in the Data field.");
+        return;
       }
-    } catch (err) {
-      alert("Invalid JSON format in the Data field. Example: {\"x\": 10, \"y\": 20}");
-      return;
     }
 
-    const payload = {
-      session_id: document.getElementById('m_session').value,
-      event_type: document.getElementById('m_type').value,
-      page_url: document.getElementById('m_url').value || window.location.href,
-      page_title: "Manual Entry",
-      client_timestamp: Math.floor(Date.now() / 1000),
-      event_data: parsedData
+    // Set up Request Details
+    let url = API_BASE;
+    let options = {
+      headers: { 'Content-Type': 'application/json' }
     };
 
-    try {
-      const res = await fetch(API_BASE, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+    if (mode === 'save') {
+      options.method = 'POST';
+      options.body = JSON.stringify({
+        session_id: document.getElementById('m_session').value,
+        event_type: document.getElementById('m_type').value,
+        page_url: document.getElementById('m_url').value || window.location.href,
+        page_title: "Manual Entry",
+        client_timestamp: Math.floor(Date.now() / 1000),
+        event_data: parsedData
       });
+    } 
+    else if (mode === 'update') {
+      options.method = 'PUT';
+      url += `?id=${id}`; // Or `/${id}` depending on your server config
+      options.body = JSON.stringify({
+        event_type: document.getElementById('m_type').value,
+        event_data: parsedData
+      });
+    } 
+    else if (mode === 'delete') {
+      options.method = 'DELETE';
+      url += `?id=${id}`; // Or `/${id}`
+    }
+
+    try {
+      const res = await fetch(url, options);
+      const result = await res.json();
 
       if (res.ok) {
-        alert("Metric saved successfully!");
+        alert(result.message || "Operation successful!");
         closeModal();
-        loadMetrics(); // Refreshes the table
+        loadMetrics();
       } else {
-        const errorData = await res.json();
-        alert("Error: " + (errorData.error || "Failed to save"));
+        alert("Error: " + (result.error || "Request failed"));
       }
     } catch (err) {
       console.error("Fetch error:", err);
-      alert("Could not connect to the API. Check your API_BASE.");
+      alert("Could not connect to the API.");
     }
   });
 }
