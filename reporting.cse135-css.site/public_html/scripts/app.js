@@ -64,7 +64,7 @@ function renderTable(rows) {
       <td>${row.page_title || ""}</td>
       <td>${row.referrer || ""}</td>
       <td>${formatDate(row.client_timestamp)}</td>
-      <td>${row.server_timestamp || ""}</td>
+      <td>${formatDate(row.server_timestamp)}</td>
       <td>${row.ip_address}</td>
     `;
 
@@ -131,13 +131,23 @@ function buildJSONTable(obj) {
 function formatDate(ts) {
   if (!ts) return "";
 
-  // Convert string to number if necessary
-  const numericTs = Number(ts);
+  // Create a Date object. 
+  // If ts is a string like "2026-02-28...", Date() will parse it.
+  // If it is a number, we apply your existing logic for seconds/milliseconds.
+  let date;
+  
+  if (isNaN(ts)) {
+    // Handle string format "2026-02-28 05:49:34"
+    date = new Date(ts);
+  } else {
+    // Handle numeric timestamp logic
+    const numericTs = Number(ts);
+    const finalTs = numericTs < 10000000000 ? numericTs * 1000 : numericTs;
+    date = new Date(finalTs);
+  }
 
-  // If the number is small (10 digits), it's in seconds. 
-  // We multiply by 1000 to get milliseconds for JavaScript.
-  const finalTs = numericTs < 10000000000 ? numericTs * 1000 : numericTs;
-  return new Date(finalTs).toLocaleString();
+  // toLocaleString() provides the "M/D/YYYY, H:MM:SS AM/PM" format by default
+  return date.toLocaleString();
 }
 
 loadMetrics();
