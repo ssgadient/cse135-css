@@ -1,19 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CSE 135 HW Lives!</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Metrics Reporting</title>
+  <link rel="stylesheet" href="style/index.css">
 </head>
 
 <body>
-  <h1>CSE 135 HW1 Lives!</h1>
-  <h2>reporting.cse135-css.site</h2>
-  <script>
-    document.write(`Live @ ${new Date()}`);
-  </script>
 
+  <header>
+    <h1>Metrics Dashboard</h1>
+  </header>
+
+  <section class="controls">
+    <input id="typeFilter" placeholder="Filter by event type">
+    <input id="sessionFilter" placeholder="Filter by session id">
+
+    <button onclick="loadMetrics()">Load Metrics</button>
+  </section>
+
+  <section class="table-container">
+    <table id="metricsTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Session</th>
+          <th>Event</th>
+          <th>Page</th>
+          <th>Title</th>
+          <th>Referrer</th>
+          <th>Client Time</th>
+          <th>Server Time</th>
+          <th>IP</th>
+          <th>Data</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <script src="scripts/app.js"></script>
 </body>
-
 </html>
