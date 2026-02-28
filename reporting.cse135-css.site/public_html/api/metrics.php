@@ -1,0 +1,202 @@
+<?php
+header("Content-Type: application/json");
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type");
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
+
+/* =============================
+   LOAD DATABASE CONFIG
+============================= */
+
+$configPath = __DIR__ . '/db_config.php';
+
+if (!file_exists($configPath)) {
+    http_response_code(500);
+    echo json_encode([
+        "error" => "Database configuration missing",
+        "hint" => "Create db_config.php from db_config.dummy.php"
+    ]);
+    exit();
+}
+
+$config = include($configPath);
+
+/* =============================
+   CONNECT DATABASE (PDO)
+============================= */
+
+try {
+    $pdo = new PDO(
+        "mysql:host={$config['host']};dbname={$config['db']};charset=utf8mb4",
+        $config['user'],
+        $config['pass'],
+        [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+        ]
+    );
+} catch (Exception $e) {
+    http_response_code(500);
+    echo json_encode(["error" => "Database connection failed"]);
+    exit();
+}
+
+/* =============================
+   HELPERS
+============================= */
+
+function jsonBody() {
+    return json_decode(file_get_contents("php://input"), true);
+}
+
+function respond($data, $code = 200) {
+    http_response_code($code);
+    echo json_encode($data);
+    exit();
+}
+
+$method  = $_SERVER['REQUEST_METHOD'];
+$id      = $_GET['id'] ?? null;
+$type    = $_GET['type'] ?? null;
+$session = $_GET['session'] ?? null;
+
+
+/* =============================
+   GET
+============================= */
+
+if ($method === "GET") {
+
+    if ($id) {
+        $stmt = $pdo->prepare(
+            "SELECT * FROM metric_logs WHERE id = ?"
+        );
+        $stmt->execute([$id]);
+
+        $row = $stmt->fetch();
+
+        if (!$row)
+            respond(["error"=>"Not found"],404);
+
+        respond($row);
+    }
+
+    $query = "SELECT * FROM metric_logs";
+    $conditions = [];
+    $params = [];
+
+    if ($type) {
+        $conditions[] = "event_type = ?";
+        $params[] = $type;
+    }
+
+    if ($session) {
+        $conditions[] = "session_id = ?";
+        $params[] = $session;
+    }
+
+    if ($conditions)
+        $query .= " WHERE " . implode(" AND ", $conditions);
+
+    $query .= " ORDER BY server_timestamp DESC";
+
+    $stmt = $pdo->prepare($query);
+    $stmt->execute($params);
+
+    respond($stmt->fetchAll());
+}
+
+
+/* =============================
+   POST
+============================= */
+
+if ($method === "POST") {
+
+    $data = jsonBody();
+
+    if (!is_array($data))
+        respond(["error"=>"Invalid JSON"],400);
+
+    $stmt = $pdo->prepare("
+        INSERT INTO metric_logs
+        (session_id, event_type, page_url, page_title,
+         referrer, client_timestamp, event_data, ip_address)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    ");
+
+    $stmt->execute([
+        $data['session_id'] ?? null,
+        $data['event_type'] ?? 'unknown',
+        $data['page_url'] ?? null,
+        $data['page_title'] ?? null,
+        $data['referrer'] ?? null,
+        $data['client_timestamp'] ?? null,
+        json_encode($data['event_data'] ?? []),
+        $_SERVER['REMOTE_ADDR']
+    ]);
+
+    respond([
+        "message" => "Inserted successfully",
+        "id" => $pdo->lastInsertId()
+    ], 201);
+}
+
+
+/* =============================
+   PUT
+============================= */
+
+if ($method === "PUT") {
+
+    if (!$id)
+        respond(["error"=>"ID required"],400);
+
+    $data = jsonBody();
+
+    $stmt = $pdo->prepare("
+        UPDATE metric_logs
+        SET event_type = ?, event_data = ?
+        WHERE id = ?
+    ");
+
+    $stmt->execute([
+        $data['event_type'],
+        json_encode($data['event_data'] ?? []),
+        $id
+    ]);
+
+    if ($stmt->rowCount() === 0)
+        respond(["error"=>"Not found"],404);
+
+    respond(["message"=>"Updated successfully"]);
+}
+
+
+/* =============================
+   DELETE
+============================= */
+
+if ($method === "DELETE") {
+
+    if (!$id)
+        respond(["error"=>"ID required"],400);
+
+    $stmt = $pdo->prepare(
+        "DELETE FROM metric_logs WHERE id = ?"
+    );
+
+    $stmt->execute([$id]);
+
+    if ($stmt->rowCount() === 0)
+        respond(["error"=>"Not found"],404);
+
+    respond(["message"=>"Deleted successfully"]);
+}
+
+respond(["error"=>"Unsupported method"],405);

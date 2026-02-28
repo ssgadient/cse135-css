@@ -1,4 +1,4 @@
-const API_BASE = "/api/metrics";
+const API_BASE = "/api/metrics.php";
 
 async function loadMetrics() {
   const type = document.getElementById("typeFilter").value;
