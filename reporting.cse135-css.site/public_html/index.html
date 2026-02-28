@@ -5,6 +5,34 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>Metrics Reporting</title>
   <link rel="stylesheet" href="style/index.css">
+  <style>
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      display: none; 
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background: white;
+      padding: 25px;
+      border-radius: 8px;
+      width: 400px;
+      color: #333;
+    }
+    .modal-content input, .modal-content textarea {
+      width: 100%;
+      margin: 10px 0;
+      padding: 8px;
+      display: block;
+      box-sizing: border-box;
+    }
+    .modal-actions { display: flex; gap: 10px; margin-top: 15px; }
+    .btn-save { background: #28a745; color: white; border: none; padding: 10px; cursor: pointer; flex: 1; }
+    .btn-cancel { background: #666; color: white; border: none; padding: 10px; cursor: pointer; flex: 1; }
+  </style>
 </head>
 
 <body>
@@ -19,6 +47,8 @@
     <input id="sessionFilter" placeholder="Filter by session id">
 
     <button onclick="loadMetrics()">Load Metrics</button>
+    
+    <button onclick="openModal()" style="background-color: #28a745; color: white; border: none; border-radius: 4px; padding: 0 15px; cursor: pointer;">+ Add Entry</button>
   </section>
 
   <section class="table-container">
@@ -42,6 +72,30 @@
       </table>
     </div>
   </section>
+
+  <div id="metricModal" class="modal-overlay">
+    <div class="modal-content">
+      <h3 style="margin-top: 0;">Manual Metric Entry</h3>
+      <form id="manualForm">
+        <label for="m_session">Session ID</label>
+        <input type="text" id="m_session" placeholder="e.g. wcp64u2y..." required>
+        
+        <label for="m_type">Event Type</label>
+        <input type="text" id="m_type" placeholder="e.g. click or js-error" required>
+        
+        <label for="m_url">Page URL</label>
+        <input type="text" id="m_url" placeholder="https://...">
+
+        <label for="m_data">Event Data (JSON)</label>
+        <textarea id="m_data" placeholder='{"x": 10, "y": 20}' rows="4"></textarea>
+        
+        <div class="modal-actions">
+          <button type="submit" class="btn-save">Save to Database</button>
+          <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <script src="scripts/app.js"></script>
 </body>

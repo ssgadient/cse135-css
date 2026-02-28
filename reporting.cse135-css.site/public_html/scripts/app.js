@@ -114,3 +114,77 @@ function formatDate(ts) {
 }
 
 loadMetrics();
+
+/* ==========================
+   NEW: MODAL & POST FEATURES
+========================== */
+
+function openModal() {
+  const modal = document.getElementById('metricModal');
+  if (modal) modal.style.display = 'flex';
+}
+
+function closeModal() {
+  const modal = document.getElementById('metricModal');
+  if (modal) {
+    modal.style.display = 'none';
+    const form = document.getElementById('manualForm');
+    if (form) form.reset();
+  }
+}
+
+// Close modal when clicking on the dark background
+window.onclick = function(event) {
+  const modal = document.getElementById('metricModal');
+  if (event.target == modal) closeModal();
+}
+
+// Handle Manual Form Submission
+const manualForm = document.getElementById('manualForm');
+if (manualForm) {
+  manualForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const dataInput = document.getElementById('m_data').value;
+    let parsedData = {};
+
+    // Validate JSON input
+    try {
+      if (dataInput.trim() !== "") {
+        parsedData = JSON.parse(dataInput);
+      }
+    } catch (err) {
+      alert("Invalid JSON format in the Data field. Example: {\"x\": 10, \"y\": 20}");
+      return;
+    }
+
+    const payload = {
+      session_id: document.getElementById('m_session').value,
+      event_type: document.getElementById('m_type').value,
+      page_url: document.getElementById('m_url').value || window.location.href,
+      page_title: "Manual Entry",
+      client_timestamp: new Date().toISOString(),
+      event_data: parsedData
+    };
+
+    try {
+      const res = await fetch(API_BASE, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        alert("Metric saved successfully!");
+        closeModal();
+        loadMetrics(); // Refreshes the table
+      } else {
+        const errorData = await res.json();
+        alert("Error: " + (errorData.error || "Failed to save"));
+      }
+    } catch (err) {
+      console.error("Fetch error:", err);
+      alert("Could not connect to the API. Check your API_BASE.");
+    }
+  });
+}
