@@ -1,6 +1,7 @@
 # CSE135 - Team CSS
 
 https://www.cse135-css.site 
+https://test.cse135-css.site/
 
 **SSH Login and Site Access Credentials:** \
 Server IP: REDACTED \
@@ -26,3 +27,7 @@ We removed the server header by installing a mod_security package, which allowed
 ## Homework 2
 
 Approach 3: Free Choice Discussion - In evaluating Userpilot’s reporting and analytics, I considered the types of data available, including user engagement metrics, feature adoption, and onboarding completion rates, as well as whether the platform provides real-time insights for product decision-making. I chose this service because it offers comprehensive visibility into user behavior, pre-built dashboards that track adoption and engagement, and professional support to help optimize user experiences. During the evaluation, I explored the Feature Adoption dashboard, noting how actions are categorized and visualized, and found the charts and graphs intuitive and actionable. Overall, the service provided clear, real-time insights that help identify friction points, monitor user activity, and make data-driven decisions, making it a valuable tool for improving product adoption and user success.
+
+## Homework 3
+
+Beyond ideas from the collector tutorial from the CSE135.site, in collector.js images and CSS are checked using runtime detection because there are no built-in browser flags for either. For images, the script creates a small Image object and assigns it a valid source. If the onload event fires, images are enabled, and if onerror fires, they are blocked. For CSS, the script dynamically creates a test element, applies a style (like display: none), and then uses getComputedStyle() to verify that the style was actually applied. These checks were added to the initial static page-load event so the environment information (image and CSS support) could be included in the data sent to the server and stored in the database.
