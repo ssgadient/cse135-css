@@ -13,10 +13,15 @@ async function loadMetrics() {
 
   // This is a rest endpoint, so use id as part of path, and add type and session as query params
   if (id) url += `/${id}`;
-  if (params.toString()) url += `?${params.toString()}`;
+  else if (params.toString()) url += `?${params.toString()}`;
 
   const res = await fetch(url);
   const data = await res.json();
+
+  // In the case that we fetch a single metric by ID, wrap it in an array for consistent rendering
+  if (!Array.isArray(data)) {
+    data = [data];
+  }
 
   renderTable(data);
 }
