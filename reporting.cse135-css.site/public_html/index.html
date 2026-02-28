@@ -67,7 +67,8 @@
         <textarea id="m_data" placeholder='{"x": 10, "y": 20}' rows="4"></textarea>
         
         <div class="modal-actions">
-          <button type="submit" class="btn-submit">Save to Database</button>
+          <!-- give a tag so that we know what operation it is submitting to the server-->
+          <button type="submit" class="btn-submit" name="create">Create Entry</button>
           <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
         </div>
       </form>

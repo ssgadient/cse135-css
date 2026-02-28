@@ -167,18 +167,19 @@ function openModal(operation = "create") {
   dataFields.forEach(id => toggleField(id, !isDelete));
 
   // 4. Apply Visual Styles and Text
+  submitBtn.setAttribute('name', operation);
   if (isCreate) {
     title.textContent = "New Metric Entry";
-    submitBtn.textContent = "Save to Database";
+    submitBtn.textContent = "Create Entry";
     submitBtn.style.backgroundColor = "#28a745"; // Green
-    submitBtn.style.color = "#fff";
+    submitBtn.style.color = "#fff"; // Set name attribute for form submission
     document.getElementById('manualForm').reset();
   } 
   else if (isUpdate) {
     title.textContent = "Update Metric Entry";
     submitBtn.textContent = "Update Entry";
     submitBtn.style.backgroundColor = "#ffed29"; // Yellow
-    submitBtn.style.color = "#000"; // Black text for readability
+    submitBtn.style.color = "#000"; // Black text for readability // Set name attribute for form submission
   } 
   else if (isDelete) {
     title.textContent = "Delete Metric Entry";
@@ -221,81 +222,76 @@ window.onclick = function(event) {
   if (event.target == modal) closeModal();
 }
 
-// Handle Manual Form Submission
 const manualForm = document.getElementById('manualForm');
 if (manualForm) {
   manualForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    // 1. Identify mode (save/update/delete) based on the button text
-    const submitBtn = e.target.querySelector('.btn-submit');
-    const mode = submitBtn.textContent.toLowerCase(); 
-    
+    const submitBtn = document.querySelector('.btn-submit');
+    const operation = submitBtn ? submitBtn.getAttribute('name') : 'create';
     const id = document.getElementById('m_id').value;
-    const dataInput = document.getElementById('m_data').value;
-    
-    // 2. Default request settings
+
+    // 1. Basic Validation for ID-dependent operations
+    if ((operation === "update" || operation === "delete") && !id) {
+      alert(`Please enter an ID to ${operation}.`);
+      return;
+    }
+
+    // 2. Prepare URL and Method based on REST standards
     let url = API_BASE;
-    let options = {
-        headers: { 'Content-Type': 'application/json' }
-    };
+    let method = 'POST'; // Default for Create
 
-    // 3. Logic Switch: Determine Method, URL, and Body
-    if (mode.includes("save")) {
-        // --- CREATE MODE ---
-        options.method = 'POST';
-        let parsedData = {};
-        try {
-            if (dataInput.trim() !== "") parsedData = JSON.parse(dataInput);
-        } catch (err) {
-            alert("Invalid JSON format in the Data field.");
-            return;
-        }
-
-        options.body = JSON.stringify({
-            session_id: document.getElementById('m_session').value,
-            event_type: document.getElementById('m_type').value,
-            page_url: document.getElementById('m_url').value || window.location.href,
-            page_title: "Manual Entry",
-            client_timestamp: Math.floor(Date.now() / 1000),
-            event_data: parsedData
-        });
-    } 
-    else if (mode.includes("delete")) {
-        // --- DELETE MODE ---
-        options.method = 'DELETE';
-        url += `?id=${id}`; // PHP needs the ID in the URL for $_GET['id']
-        if (!confirm(`Are you sure you want to delete ID ${id}?`)) return;
-    }
-    else if (mode.includes("update")) {
-        // --- UPDATE MODE ---
-        options.method = 'PUT';
-        url += `?id=${id}`;
-        let parsedData = {};
-        try {
-            if (dataInput.trim() !== "") parsedData = JSON.parse(dataInput);
-        } catch (err) {
-            alert("Invalid JSON format.");
-            return;
-        }
-        options.body = JSON.stringify({
-            event_type: document.getElementById('m_type').value,
-            event_data: parsedData
-        });
+    if (operation === "update") {
+      method = 'PUT';
+      url = `${API_BASE}/${id}`; // Path-based ID for REST
+    } else if (operation === "delete") {
+      method = 'DELETE';
+      url = `${API_BASE}/${id}`; // Path-based ID for REST
     }
 
-    // 4. Send the specific request
+    // 3. Prepare Payload (Not needed for DELETE)
+    let bodyData = null;
+    if (operation !== "delete") {
+      const dataInput = document.getElementById('m_data').value;
+      let parsedData = {};
+
+      try {
+        if (dataInput.trim() !== "") {
+          parsedData = JSON.parse(dataInput);
+        }
+      } catch (err) {
+        alert("Invalid JSON format in the Data field.");
+        return;
+      }
+
+      bodyData = JSON.stringify({
+        session_id: document.getElementById('m_session').value,
+        event_type: document.getElementById('m_type').value,
+        page_url: document.getElementById('m_url').value || window.location.href,
+        page_title: operation === "update" ? "Manual Update" : "Manual Entry",
+        client_timestamp: Math.floor(Date.now() / 1000),
+        event_data: parsedData
+      });
+    }
+
+    // 4. Execute Request
     try {
-        const res = await fetch(url, options);
-        const result = await res.json();
+      const options = {
+        method: method,
+        headers: { 'Content-Type': 'application/json' }
+      };
+      if (bodyData) options.body = bodyData;
 
-        if (res.ok) {
-            alert(result.message || "Operation successful!");
-            closeModal();
-            loadMetrics(); // Refresh the table
-        } else {
-            alert("Error: " + (result.error || "Request failed"));
-        }
+      const res = await fetch(url, options);
+
+      if (res.ok) {
+        alert(`Metric ${operation}d successfully!`);
+        closeModal();
+        loadMetrics(); // Refresh the table
+      } else {
+        const errorData = await res.json();
+        alert("Error: " + (errorData.error || `Failed to ${operation}`));
+      }
     } catch (err) {
         console.error("Fetch error:", err);
         alert("Could not connect to the API.");
