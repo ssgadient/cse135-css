@@ -16,7 +16,7 @@ async function loadMetrics() {
   else if (params.toString()) url += `?${params.toString()}`;
 
   const res = await fetch(url);
-  const data = await res.json();
+  let data = await res.json();
 
   // In the case that we fetch a single metric by ID, wrap it in an array for consistent rendering
   if (!Array.isArray(data)) {
