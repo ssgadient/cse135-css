@@ -1,6 +1,6 @@
 # CSE135 - Team CSS
 
-https://www.cse135-css.site 
+Homepage: https://www.cse135-css.site 
 
 Test Site: https://test.cse135-css.site/
 
@@ -33,6 +33,6 @@ Approach 3: Free Choice Discussion - In evaluating Userpilot’s reporting and a
 
 ## Homework 3
 
-**Changes made to collector.js beyond ideas:** \
+**Changes made to collector.js beyond ideas:**
 
 Beyond ideas from the collector tutorial from the CSE135.site, in collector.js images and CSS are checked using runtime detection because there are no built-in browser flags for either. For images, the script creates a small Image object and assigns it a valid source. If the onload event fires, images are enabled, and if onerror fires, they are blocked. For CSS, the script dynamically creates a test element, applies a style (like display: none), and then uses getComputedStyle() to verify that the style was actually applied. These checks were added to the initial static page-load event so the environment information (image and CSS support) could be included in the data sent to the server and stored in the database.
