@@ -64,7 +64,7 @@ function renderTable(rows) {
       <td>${row.page_title || ""}</td>
       <td>${row.referrer || ""}</td>
       <td>${formatDate(row.client_timestamp)}</td>
-      <td>${formatDate(row.server_timestamp)}</td>
+      <td>${row.server_timestamp || ""}</td>
       <td>${row.ip_address}</td>
     `;
 
