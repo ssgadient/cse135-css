@@ -66,11 +66,6 @@ function renderTable(rows) {
       <td>${formatDate(row.client_timestamp)}</td>
       <td>${formatDate(row.server_timestamp)}</td>
       <td>${row.ip_address}</td>
-      <td>
-        <button class="delete-btn" onclick="deleteMetric(${row.id})">
-          Delete
-        </button>
-      </td>
     `;
 
     tr.appendChild(dataCell);
@@ -232,72 +227,80 @@ if (manualForm) {
   manualForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    // Identify the current operation based on the button text
-    const submitBtn = document.querySelector('.btn-submit');
-    const mode = submitBtn.textContent.split(' ')[0].toLowerCase(); // "save", "update", or "delete"
+    // 1. Identify mode (save/update/delete) based on the button text
+    const submitBtn = e.target.querySelector('.btn-submit');
+    const mode = submitBtn.textContent.toLowerCase(); 
     
     const id = document.getElementById('m_id').value;
     const dataInput = document.getElementById('m_data').value;
-    let parsedData = {};
-
-    // Validate JSON only for Save/Update
-    if (mode !== 'delete') {
-      try {
-        if (dataInput.trim() !== "") {
-          parsedData = JSON.parse(dataInput);
-        }
-      } catch (err) {
-        alert("Invalid JSON format in the Data field.");
-        return;
-      }
-    }
-
-    // Set up Request Details
+    
+    // 2. Default request settings
     let url = API_BASE;
     let options = {
-      headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' }
     };
 
-    if (mode === 'save') {
-      options.method = 'POST';
-      options.body = JSON.stringify({
-        session_id: document.getElementById('m_session').value,
-        event_type: document.getElementById('m_type').value,
-        page_url: document.getElementById('m_url').value || window.location.href,
-        page_title: "Manual Entry",
-        client_timestamp: Math.floor(Date.now() / 1000),
-        event_data: parsedData
-      });
+    // 3. Logic Switch: Determine Method, URL, and Body
+    if (mode.includes("save")) {
+        // --- CREATE MODE ---
+        options.method = 'POST';
+        let parsedData = {};
+        try {
+            if (dataInput.trim() !== "") parsedData = JSON.parse(dataInput);
+        } catch (err) {
+            alert("Invalid JSON format in the Data field.");
+            return;
+        }
+
+        options.body = JSON.stringify({
+            session_id: document.getElementById('m_session').value,
+            event_type: document.getElementById('m_type').value,
+            page_url: document.getElementById('m_url').value || window.location.href,
+            page_title: "Manual Entry",
+            client_timestamp: Math.floor(Date.now() / 1000),
+            event_data: parsedData
+        });
     } 
-    else if (mode === 'update') {
-      options.method = 'PUT';
-      url += `?id=${id}`; // Or `/${id}` depending on your server config
-      options.body = JSON.stringify({
-        event_type: document.getElementById('m_type').value,
-        event_data: parsedData
-      });
-    } 
-    else if (mode === 'delete') {
-      options.method = 'DELETE';
-      url += `?id=${id}`; // Or `/${id}`
+    else if (mode.includes("delete")) {
+        // --- DELETE MODE ---
+        options.method = 'DELETE';
+        url += `?id=${id}`; // PHP needs the ID in the URL for $_GET['id']
+        if (!confirm(`Are you sure you want to delete ID ${id}?`)) return;
+    }
+    else if (mode.includes("update")) {
+        // --- UPDATE MODE ---
+        options.method = 'PUT';
+        url += `?id=${id}`;
+        let parsedData = {};
+        try {
+            if (dataInput.trim() !== "") parsedData = JSON.parse(dataInput);
+        } catch (err) {
+            alert("Invalid JSON format.");
+            return;
+        }
+        options.body = JSON.stringify({
+            event_type: document.getElementById('m_type').value,
+            event_data: parsedData
+        });
     }
 
+    // 4. Send the specific request
     try {
-      const res = await fetch(url, options);
-      const result = await res.json();
+        const res = await fetch(url, options);
+        const result = await res.json();
 
-      if (res.ok) {
-        alert(result.message || "Operation successful!");
-        closeModal();
-        loadMetrics();
-      } else {
-        alert("Error: " + (result.error || "Request failed"));
-      }
+        if (res.ok) {
+            alert(result.message || "Operation successful!");
+            closeModal();
+            loadMetrics(); // Refresh the table
+        } else {
+            alert("Error: " + (result.error || "Request failed"));
+        }
     } catch (err) {
-      console.error("Fetch error:", err);
-      alert("Could not connect to the API.");
+        console.error("Fetch error:", err);
+        alert("Could not connect to the API.");
     }
-  });
+});
 }
 
 /* ==========================
