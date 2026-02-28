@@ -110,7 +110,14 @@ function buildJSONTable(obj) {
 
 function formatDate(ts) {
   if (!ts) return "";
-  return new Date(ts).toLocaleString();
+
+  // Convert string to number if necessary
+  const numericTs = Number(ts);
+
+  // If the number is small (10 digits), it's in seconds. 
+  // We multiply by 1000 to get milliseconds for JavaScript.
+  const finalTs = numericTs < 10000000000 ? numericTs * 1000 : numericTs;
+  return new Date(finalTs).toLocaleString();
 }
 
 loadMetrics();
@@ -163,7 +170,7 @@ if (manualForm) {
       event_type: document.getElementById('m_type').value,
       page_url: document.getElementById('m_url').value || window.location.href,
       page_title: "Manual Entry",
-      client_timestamp: Date.now(),
+      client_timestamp: Math.floor(Date.now() / 1000),
       event_data: parsedData
     };
 

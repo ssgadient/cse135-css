@@ -135,9 +135,9 @@ if ($method === "POST") {
     ");
 
     try {
-        // Force the timestamp to be an integer to satisfy the BIGINT requirement
-        // If the data is missing or invalid, it defaults to 0 or null
-        $clientTs = isset($data['client_timestamp']) ? (int)$data['client_timestamp'] : 0;
+        // Remove (int) casting. Let PHP pass the large numeric string directly.
+        // We still use ?? 0 to ensure we don't pass a NULL to a column that might not like it.
+        $clientTs = $data['client_timestamp'] ?? 0;
 
         $stmt->execute([
             $data['session_id'] ?? 'unknown',          
@@ -145,12 +145,12 @@ if ($method === "POST") {
             $data['page_url'] ?? null,                
             $data['page_title'] ?? null,               
             $data['referrer'] ?? null,                 
-            $clientTs, // This is now a clean integer
+            $clientTs, // PDO will handle this large number correctly now
             json_encode($data['event_data'] ?? []),    
             
             $_SERVER['REMOTE_ADDR']                    
         ]);
-
+        
         respond([
             "message" => "Inserted successfully",
             "id" => $pdo->lastInsertId()
