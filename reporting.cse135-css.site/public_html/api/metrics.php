@@ -128,7 +128,6 @@ if ($method === "POST") {
         respond(["error" => "Invalid JSON provided"], 400);
     }
 
-    
     $stmt = $pdo->prepare("
         INSERT INTO metric_logs 
         (session_id, event_type, page_url, page_title, referrer, client_timestamp, event_data, ip_address) 
@@ -136,13 +135,17 @@ if ($method === "POST") {
     ");
 
     try {
+        // Force the timestamp to be an integer to satisfy the BIGINT requirement
+        // If the data is missing or invalid, it defaults to 0 or null
+        $clientTs = isset($data['client_timestamp']) ? (int)$data['client_timestamp'] : 0;
+
         $stmt->execute([
             $data['session_id'] ?? 'unknown',          
             $data['event_type'] ?? 'general',          
             $data['page_url'] ?? null,                
             $data['page_title'] ?? null,               
             $data['referrer'] ?? null,                 
-            $data['client_timestamp'] ?? null,         
+            $clientTs, // This is now a clean integer
             json_encode($data['event_data'] ?? []),    
             
             $_SERVER['REMOTE_ADDR']                    

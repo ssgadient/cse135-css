@@ -163,7 +163,7 @@ if (manualForm) {
       event_type: document.getElementById('m_type').value,
       page_url: document.getElementById('m_url').value || window.location.href,
       page_title: "Manual Entry",
-      client_timestamp: new Date().toISOString(),
+      client_timestamp: Date.now(),
       event_data: parsedData
     };
 
