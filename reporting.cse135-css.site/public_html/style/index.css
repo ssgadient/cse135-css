@@ -37,13 +37,21 @@ header {
   background: #1d4ed8;
 }
 
+/* ==========================
+   TABLE LAYOUT (SCROLLABLE)
+========================== */
+
 .table-container {
-  padding: 20px;
+  width: 100%;
+  overflow-x: auto;     /* horizontal scrollbar */
+  overflow-y: visible;
 }
 
-table {
-  width: 100%;
+/* table grows naturally */
+#metricsTable {
   border-collapse: collapse;
+  width: max-content;   /* KEY FIX */
+  min-width: 100%;      /* never smaller than screen */
   background: white;
 }
 
@@ -51,69 +59,46 @@ th, td {
   padding: 10px;
   border-bottom: 1px solid #eee;
   text-align: left;
-  font-size: 14px;
+  vertical-align: top;
+  white-space: nowrap;  /* prevent crushing columns */
 }
 
 th {
   background: #f1f5f9;
-}
-
-tr:hover {
-  background: #f9fafb;
-}
-
-td {
-  max-width: 250px;
-  overflow-wrap: break-word;
-}
-
-/* Prevent table from exploding horizontally */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  table-layout: fixed;
-}
-
-/* allow wrapping everywhere */
-td, th {
-  word-break: break-word;
-  overflow-wrap: anywhere;
-  vertical-align: top;
-}
-
-/* scroll container instead of page overflow */
-.table-container {
-  overflow-x: auto;
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
 /* =====================
-   JSON TABLE STYLE
+   JSON TABLE
 ===================== */
 
 .json-table {
-  width: 100%;
   border: 1px solid #e5e7eb;
   font-size: 12px;
   background: #fafafa;
+  min-width: 450px;     /* readable width */
+  max-width: 900px;     /* prevents insanity */
 }
 
 .json-table td {
   border: 1px solid #e5e7eb;
   padding: 4px 6px;
+  white-space: normal;  /* allow wrapping HERE */
+  word-break: break-word;
 }
 
 .json-key {
   font-weight: bold;
-  width: 35%;
   background: #f1f5f9;
+  width: 35%;
 }
 
 .json-value {
   width: 65%;
-  white-space: pre-wrap;
 }
 
-/* collapsible objects */
 details {
   cursor: pointer;
 }
