@@ -4,6 +4,8 @@ https://www.cse135-css.site
 
 Test Site: https://test.cse135-css.site/
 
+Database Reporting Site: https://reporting.cse135-css.site/
+
 **SSH Login and Site Access Credentials:** \
 Server IP: REDACTED \
 Username: REDACTED \
