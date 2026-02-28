@@ -207,14 +207,8 @@ function toggleField(id, show) {
   const label = document.getElementById(id + '_label');
   const displayMode = show ? 'block' : 'none';
 
-  if (field) {
-    field.style.display = displayMode;
-    // Only require fields that are visible and necessary for the DB
-    field.required = show && (id !== 'm_url' && id !== 'm_data'); 
-  }
-  if (label) {
-    label.style.display = displayMode;
-  }
+  if (field) { field.style.display = displayMode; }
+  if (label) { label.style.display = displayMode; }
 }
 
 function closeModal() {
@@ -307,31 +301,4 @@ if (manualForm) {
         alert("Could not connect to the API.");
     }
 });
-}
-
-/* ==========================
-   DELETE FUNCTIONALITY
-========================== */
-
-async function deleteMetric(id) {
-  // 1. Confirm with the user
-  if (!confirm(`Are you sure you want to delete entry #${id}?`)) return;
-
-  try {
-    // 2. Send DELETE request to your REST endpoint
-    const res = await fetch(`${API_BASE}/${id}`, {
-      method: 'DELETE'
-    });
-
-    if (res.ok) {
-      // 3. Refresh the table if successful
-      loadMetrics();
-    } else {
-      const errorData = await res.json();
-      alert("Error: " + (errorData.error || "Failed to delete"));
-    }
-  } catch (err) {
-    console.error("Delete error:", err);
-    alert("Could not reach the server to delete.");
-  }
 }
