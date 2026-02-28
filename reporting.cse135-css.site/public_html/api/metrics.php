@@ -122,34 +122,40 @@ if ($method === "GET") {
 ============================= */
 
 if ($method === "POST") {
-
     $data = jsonBody();
 
-    if (!is_array($data))
-        respond(["error"=>"Invalid JSON"],400);
+    if (!is_array($data)) {
+        respond(["error" => "Invalid JSON provided"], 400);
+    }
 
+    
     $stmt = $pdo->prepare("
-        INSERT INTO metric_logs
-        (session_id, event_type, page_url, page_title,
-         referrer, client_timestamp, event_data, ip_address)
+        INSERT INTO metric_logs 
+        (session_id, event_type, page_url, page_title, referrer, client_timestamp, event_data, ip_address) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     ");
 
-    $stmt->execute([
-        $data['session_id'] ?? null,
-        $data['event_type'] ?? 'unknown',
-        $data['page_url'] ?? null,
-        $data['page_title'] ?? null,
-        $data['referrer'] ?? null,
-        $data['client_timestamp'] ?? null,
-        json_encode($data['event_data'] ?? []),
-        $_SERVER['REMOTE_ADDR']
-    ]);
+    try {
+        $stmt->execute([
+            $data['session_id'] ?? 'unknown',          
+            $data['event_type'] ?? 'general',          
+            $data['page_url'] ?? null,                
+            $data['page_title'] ?? null,               
+            $data['referrer'] ?? null,                 
+            $data['client_timestamp'] ?? null,         
+            json_encode($data['event_data'] ?? []),    
+            
+            $_SERVER['REMOTE_ADDR']                    
+        ]);
 
-    respond([
-        "message" => "Inserted successfully",
-        "id" => $pdo->lastInsertId()
-    ], 201);
+        respond([
+            "message" => "Inserted successfully",
+            "id" => $pdo->lastInsertId()
+        ], 201);
+
+    } catch (PDOException $e) {
+        respond(["error" => "DB Error: " . $e->getMessage()], 500);
+    }
 }
 
 
