@@ -1,6 +1,7 @@
 const API_BASE = "/api/metrics";
 
 async function loadMetrics() {
+  const id = document.getElementById("idFilter").value;
   const type = document.getElementById("typeFilter").value;
   const session = document.getElementById("sessionFilter").value;
 
@@ -10,8 +11,9 @@ async function loadMetrics() {
   if (type) params.append("type", type);
   if (session) params.append("session", session);
 
-  if (params.toString())
-    url += "?" + params.toString();
+  // This is a rest endpoint, so use id as part of path, and add type and session as query params
+  if (id) url += `/${id}`;
+  if (params.toString()) url += `?${params.toString()}`;
 
   const res = await fetch(url);
   const data = await res.json();
