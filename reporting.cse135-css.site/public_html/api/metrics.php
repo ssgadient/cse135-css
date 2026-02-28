@@ -197,21 +197,23 @@ if ($method === "PUT") {
 ============================= */
 
 if ($method === "DELETE") {
-
-    if (!$id)
-        respond(["error"=>"ID required"],400);
-
-    $stmt = $pdo->prepare(
-        "DELETE FROM metric_logs WHERE id = ?"
-    );
-
-    $stmt->execute([$id]);
-
-    if ($stmt->rowCount() === 0) {
-        respond(["error"=>"Delete failed. Could not find metric with ID: $id"],404);
+    if ($id === null) {
+        respond(["error" => "ID is required for deletion"], 400);
     }
 
-    respond(["message"=>"Deleted successfully"]);
-}
+    $query = "DELETE FROM metric_logs WHERE id = ?";
+    
+    try {
+        $stmt = $pdo->prepare($query);
+        $stmt->execute([$id]);
 
-respond(["error"=>"Unsupported method"],405);
+        if ($stmt->rowCount() === 0) {
+            respond(["error" => "Metric with ID $id not found"], 404);
+        }
+
+        respond(["message" => "Metric $id deleted successfully"]);
+
+    } catch (PDOException $e) {
+        respond(["error" => "DB Error: " . $e->getMessage()], 500);
+    }
+}

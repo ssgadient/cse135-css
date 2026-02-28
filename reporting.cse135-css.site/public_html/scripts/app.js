@@ -55,6 +55,7 @@ function renderTable(rows) {
     const dataCell = document.createElement("td");
     dataCell.appendChild(renderJSON(row.event_data));
 
+    // Added a column at the end for the Delete button
     tr.innerHTML = `
       <td>${row.id}</td>
       <td>${row.session_id}</td>
@@ -65,6 +66,11 @@ function renderTable(rows) {
       <td>${formatDate(row.client_timestamp)}</td>
       <td>${formatDate(row.server_timestamp)}</td>
       <td>${row.ip_address}</td>
+      <td>
+        <button class="delete-btn" onclick="deleteMetric(${row.id})">
+          Delete
+        </button>
+      </td>
     `;
 
     tr.appendChild(dataCell);
@@ -213,4 +219,31 @@ if (manualForm) {
       alert("Could not connect to the API. Check your API_BASE.");
     }
   });
+}
+
+/* ==========================
+   DELETE FUNCTIONALITY
+========================== */
+
+async function deleteMetric(id) {
+  // 1. Confirm with the user
+  if (!confirm(`Are you sure you want to delete entry #${id}?`)) return;
+
+  try {
+    // 2. Send DELETE request to your REST endpoint
+    const res = await fetch(`${API_BASE}/${id}`, {
+      method: 'DELETE'
+    });
+
+    if (res.ok) {
+      // 3. Refresh the table if successful
+      loadMetrics();
+    } else {
+      const errorData = await res.json();
+      alert("Error: " + (errorData.error || "Failed to delete"));
+    }
+  } catch (err) {
+    console.error("Delete error:", err);
+    alert("Could not reach the server to delete.");
+  }
 }
