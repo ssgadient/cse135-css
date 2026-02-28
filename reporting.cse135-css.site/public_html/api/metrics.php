@@ -72,43 +72,48 @@ $session = $_GET['session'] ?? null;
 
 if ($method === "GET") {
 
-    if ($id) {
-        $stmt = $pdo->prepare(
-            "SELECT * FROM metric_logs WHERE id = ?"
-        );
-        $stmt->execute([$id]);
-
-        $row = $stmt->fetch();
-
-        if (!$row)
-            respond(["error"=>"Not found"],404);
-
-        respond($row);
-    }
-
     $query = "SELECT * FROM metric_logs";
     $conditions = [];
     $params = [];
 
-    if ($type) {
+    // filter by row id
+    if ($id !== null) {
+        $conditions[] = "id = ?";
+        $params[] = $id;
+    }
+
+    // filter by event type
+    if ($type !== null) {
         $conditions[] = "event_type = ?";
         $params[] = $type;
     }
 
-    if ($session) {
+    // filter by session
+    if ($session !== null) {
         $conditions[] = "session_id = ?";
         $params[] = $session;
     }
 
-    if ($conditions)
+    if ($conditions) {
         $query .= " WHERE " . implode(" AND ", $conditions);
+    }
 
     $query .= " ORDER BY server_timestamp DESC";
 
     $stmt = $pdo->prepare($query);
     $stmt->execute($params);
 
-    respond($stmt->fetchAll());
+    $results = $stmt->fetchAll();
+
+    // If querying specific ID, return single object
+    if ($id !== null) {
+        if (count($results) === 0)
+            respond(["error"=>"Not found"],404);
+
+        respond($results[0]);
+    }
+
+    respond($results);
 }
 
 
