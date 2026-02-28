@@ -66,3 +66,59 @@ td {
   max-width: 250px;
   overflow-wrap: break-word;
 }
+
+/* Prevent table from exploding horizontally */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+/* allow wrapping everywhere */
+td, th {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  vertical-align: top;
+}
+
+/* scroll container instead of page overflow */
+.table-container {
+  overflow-x: auto;
+}
+
+/* =====================
+   JSON TABLE STYLE
+===================== */
+
+.json-table {
+  width: 100%;
+  border: 1px solid #e5e7eb;
+  font-size: 12px;
+  background: #fafafa;
+}
+
+.json-table td {
+  border: 1px solid #e5e7eb;
+  padding: 4px 6px;
+}
+
+.json-key {
+  font-weight: bold;
+  width: 35%;
+  background: #f1f5f9;
+}
+
+.json-value {
+  width: 65%;
+  white-space: pre-wrap;
+}
+
+/* collapsible objects */
+details {
+  cursor: pointer;
+}
+
+summary {
+  font-weight: bold;
+  color: #2563eb;
+}

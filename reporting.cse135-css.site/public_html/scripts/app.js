@@ -13,15 +13,10 @@ async function loadMetrics() {
   if (params.toString())
     url += "?" + params.toString();
 
-  try {
-    const res = await fetch(url);
-    const data = await res.json();
+  const res = await fetch(url);
+  const data = await res.json();
 
-    renderTable(data);
-
-  } catch (err) {
-    console.error("Fetch failed:", err);
-  }
+  renderTable(data);
 }
 
 function renderTable(rows) {
@@ -30,6 +25,9 @@ function renderTable(rows) {
 
   rows.forEach(row => {
     const tr = document.createElement("tr");
+
+    const dataCell = document.createElement("td");
+    dataCell.appendChild(renderJSON(row.event_data));
 
     tr.innerHTML = `
       <td>${row.id}</td>
@@ -41,19 +39,66 @@ function renderTable(rows) {
       <td>${formatDate(row.client_timestamp)}</td>
       <td>${formatDate(row.server_timestamp)}</td>
       <td>${row.ip_address}</td>
-      <td><pre>${prettyJSON(row.event_data)}</pre></td>
     `;
 
+    tr.appendChild(dataCell);
     tbody.appendChild(tr);
   });
 }
 
-function prettyJSON(data) {
+/* ==========================
+   JSON → TABLE RENDERER
+========================== */
+
+function renderJSON(jsonString) {
+  let data;
+
   try {
-    return JSON.stringify(JSON.parse(data), null, 2);
+    data = JSON.parse(jsonString);
   } catch {
-    return data || "";
+    const span = document.createElement("span");
+    span.textContent = jsonString;
+    return span;
   }
+
+  return buildJSONTable(data);
+}
+
+function buildJSONTable(obj) {
+  const table = document.createElement("table");
+  table.className = "json-table";
+
+  Object.entries(obj).forEach(([key, value]) => {
+    const row = document.createElement("tr");
+
+    const keyCell = document.createElement("td");
+    keyCell.className = "json-key";
+    keyCell.textContent = key;
+
+    const valueCell = document.createElement("td");
+    valueCell.className = "json-value";
+
+    if (typeof value === "object" && value !== null) {
+      const details = document.createElement("details");
+      const summary = document.createElement("summary");
+      summary.textContent = Array.isArray(value)
+        ? `Array (${value.length})`
+        : "Object";
+
+      details.appendChild(summary);
+      details.appendChild(buildJSONTable(value));
+
+      valueCell.appendChild(details);
+    } else {
+      valueCell.textContent = value;
+    }
+
+    row.appendChild(keyCell);
+    row.appendChild(valueCell);
+    table.appendChild(row);
+  });
+
+  return table;
 }
 
 function formatDate(ts) {
@@ -61,5 +106,4 @@ function formatDate(ts) {
   return new Date(ts).toLocaleString();
 }
 
-// auto-load on page open
 loadMetrics();
