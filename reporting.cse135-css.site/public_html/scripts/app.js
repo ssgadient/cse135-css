@@ -11,19 +11,38 @@ async function loadMetrics() {
   if (type) params.append("type", type);
   if (session) params.append("session", session);
 
-  // This is a rest endpoint, so use id as part of path, and add type and session as query params
-  if (id) url += `/${id}`;
-  else if (params.toString()) url += `?${params.toString()}`;
-
-  const res = await fetch(url);
-  let data = await res.json();
-
-  // In the case that we fetch a single metric by ID, wrap it in an array for consistent rendering
-  if (!Array.isArray(data)) {
-    data = [data];
+  // Path-based ID for RESTful style, or query params
+  if (id) {
+    url += `/${id}`;
+  } else if (params.toString()) {
+    url += `?${params.toString()}`;
   }
 
-  renderTable(data);
+  try {
+    const res = await fetch(url);
+
+    // 1. Check if the server returned an error (like 404)
+    if (!res.ok) {
+      const errorData = await res.json();
+      // Use the 'error' field sent by your PHP (e.g., "Not found")
+      alert(`Error ${res.status}: ${errorData.error || 'Request failed'}`);
+      return; // Exit the function so we don't try to render
+    }
+
+    let data = await res.json();
+
+    // 2. Consistent rendering: Wrap single object in an array
+    if (!Array.isArray(data)) {
+      data = [data];
+    }
+
+    renderTable(data);
+
+  } catch (err) {
+    // This catches network failures or JSON parsing errors
+    console.error("Fetch error:", err);
+    alert("Connection error: Could not reach the reporting server.");
+  }
 }
 
 function renderTable(rows) {
