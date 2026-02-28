@@ -38,36 +38,44 @@ header {
 }
 
 /* ==========================
-   TABLE LAYOUT (SCROLLABLE)
+   TABLE VIEWPORT
 ========================== */
 
 .table-container {
+  padding: 20px;
+}
+
+/* NEW: scrolling viewport */
+.table-scroll {
   width: 100%;
-  overflow-x: auto;     /* horizontal scrollbar */
-  overflow-y: visible;
+  height: 70vh;           /* visible window height */
+  overflow: auto;         /* BOTH scrollbars here */
+  border: 1px solid #ddd;
+  background: white;
 }
 
 /* table grows naturally */
 #metricsTable {
   border-collapse: collapse;
-  width: max-content;   /* KEY FIX */
-  min-width: 100%;      /* never smaller than screen */
-  background: white;
+  width: max-content;
+  min-width: 100%;
 }
 
+/* cells */
 th, td {
   padding: 10px;
   border-bottom: 1px solid #eee;
   text-align: left;
   vertical-align: top;
-  white-space: nowrap;  /* prevent crushing columns */
+  white-space: nowrap;
 }
 
-th {
-  background: #f1f5f9;
+/* sticky header */
+thead th {
   position: sticky;
   top: 0;
-  z-index: 1;
+  background: #f1f5f9;
+  z-index: 2;
 }
 
 /* =====================
