@@ -151,9 +151,64 @@ loadMetrics();
    NEW: MODAL & POST FEATURES
 ========================== */
 
-function openModal() {
+function openModal(operation = "create") {
   const modal = document.getElementById('metricModal');
-  if (modal) modal.style.display = 'flex';
+  const submitBtn = document.querySelector('.btn-submit');
+  const title = document.querySelector('.modal-content h3');
+  
+  if (!modal || !submitBtn) return;
+  modal.style.display = 'flex';
+
+  // 1. Identify the operation
+  const isDelete = (operation === "delete");
+  const isUpdate = (operation === "update");
+  const isCreate = (operation === "create");
+
+  // 2. Toggle ID field and label (Visible for Update/Delete)
+  toggleField('m_id', isUpdate || isDelete);
+
+  // 3. Toggle Data fields and labels (Hidden for Delete)
+  const dataFields = ['m_session', 'm_type', 'm_url', 'm_data'];
+  dataFields.forEach(id => toggleField(id, !isDelete));
+
+  // 4. Apply Visual Styles and Text
+  if (isCreate) {
+    title.textContent = "New Metric Entry";
+    submitBtn.textContent = "Save to Database";
+    submitBtn.style.backgroundColor = "#28a745"; // Green
+    submitBtn.style.color = "#fff";
+    document.getElementById('manualForm').reset();
+  } 
+  else if (isUpdate) {
+    title.textContent = "Update Metric Entry";
+    submitBtn.textContent = "Update Entry";
+    submitBtn.style.backgroundColor = "#ffed29"; // Yellow
+    submitBtn.style.color = "#000"; // Black text for readability
+  } 
+  else if (isDelete) {
+    title.textContent = "Delete Metric Entry";
+    submitBtn.textContent = "Delete Entry";
+    submitBtn.style.backgroundColor = "#d30000"; // Red
+    submitBtn.style.color = "#fff";
+  }
+}
+
+/**
+ * Helper to toggle display of inputs and their specific label IDs
+ */
+function toggleField(id, show) {
+  const field = document.getElementById(id);
+  const label = document.getElementById(id + '_label');
+  const displayMode = show ? 'block' : 'none';
+
+  if (field) {
+    field.style.display = displayMode;
+    // Only require fields that are visible and necessary for the DB
+    field.required = show && (id !== 'm_url' && id !== 'm_data'); 
+  }
+  if (label) {
+    label.style.display = displayMode;
+  }
 }
 
 function closeModal() {

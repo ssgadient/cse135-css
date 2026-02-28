@@ -115,3 +115,52 @@ summary {
   font-weight: bold;
   color: #2563eb;
 }
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: none; 
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+.modal-content {
+  background: white;
+  padding: 25px;
+  border-radius: 8px;
+  width: 400px;
+  color: #333;
+}
+
+.modal-content input, .modal-content textarea {
+  width: 100%;
+  margin: 10px 0;
+  padding: 8px;
+  display: block;
+  box-sizing: border-box;
+}
+
+.modal-actions { 
+  display: flex; 
+  gap: 10px; 
+  margin-top: 15px; 
+}
+
+.btn-submit { 
+  background: #ffed29; 
+  color: white; 
+  border: none; 
+  padding: 10px; 
+  cursor: pointer; 
+  flex: 1; 
+}
+
+.btn-cancel { 
+  background: #666; 
+  color: white; 
+  border: none; 
+  padding: 10px; 
+  cursor: pointer; 
+  flex: 1; 
+}
