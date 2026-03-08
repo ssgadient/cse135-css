@@ -24,7 +24,7 @@ if (!isset($_SESSION['user_id'])) {
    LOAD DATABASE CONFIG
 ============================= */
 
-$configPath = __DIR__ . '../../db_config.php';
+$configPath = __DIR__ . '/../../db_config.php';
 
 if (!file_exists($configPath)) {
     http_response_code(500);

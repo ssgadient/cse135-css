@@ -3,7 +3,7 @@ session_start();
 header("Content-Type: application/json");
 
 // Load Database Config
-$configPath = __DIR__ . '../../db_config.php';
+$configPath = __DIR__ . '/../../db_config.php';
 if (!file_exists($configPath)) {
     http_response_code(500);
     echo json_encode(["error" => "Configuration missing"]);
