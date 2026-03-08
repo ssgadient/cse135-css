@@ -1,6 +1,114 @@
-const API_BASE = "/api/metrics";
+const METRICS_API_BASE = "/api/metrics";
+const LOGIN_API = "/api/login";
+const LOGOUT_API = "/api/logout";
+const ADMIN_API = "/api/admin/manage_users";
 
 let eventChart = null;
+
+/* ==========================
+   AUTHENTICATION LOGIC
+========================== */
+
+document.addEventListener('DOMContentLoaded', async () => {
+    // 1. Check if user is logged in via GET request to login.php
+    try {
+        const checkRes = await fetch(LOGIN_API, { method: 'GET' });
+        if (checkRes.ok) {
+            showDashboard();
+        } else {
+            showLogin();
+        }
+    } catch (err) {
+        showLogin();
+    }
+});
+
+function showLogin() {
+    document.getElementById('loginContainer').style.display = 'block';
+    document.getElementById('dashboardContainer').style.display = 'none';
+    
+    document.getElementById('loginForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        
+        const res = await fetch(LOGIN_API, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+
+        if (res.ok) {
+            window.location.reload(); // Refresh to trigger showDashboard()
+        } else {
+            document.getElementById('loginError').innerText = "Invalid username or password";
+        }
+    };
+}
+
+// 1. View Switching Logic
+function showView(viewName) {
+    document.getElementById('overviewView').style.display = viewName === 'overview' ? 'block' : 'none';
+    document.getElementById('adminView').style.display = viewName === 'admin' ? 'block' : 'none';
+    
+    if (viewName === 'overview') {
+        loadMetrics(); // Refresh data when returning to overview
+    }
+}
+
+// Authentication Gatekeeper
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        const checkRes = await fetch(LOGIN_API, { method: 'GET' }); // Check session
+        if (checkRes.ok) {
+            document.getElementById('loginContainer').style.display = 'none';
+            document.getElementById('dashboardContainer').style.display = 'block';
+            showView('overview');
+            setupAuthHandlers();
+        } else {
+            document.getElementById('loginContainer').style.display = 'block';
+            initLoginHandler();
+        }
+    } catch (err) {
+        document.getElementById('loginContainer').style.display = 'block';
+    }
+});
+
+// Admin User Creation
+function setupAuthHandlers() {
+    document.getElementById('logoutBtn').onclick = async () => {
+        await fetch(LOGOUT_API, { method: 'POST' });
+        window.location.reload();
+    };
+
+    document.getElementById('createUserForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const username = document.getElementById('newUsername').value;
+        const password = document.getElementById('newPassword').value;
+        const msg = document.getElementById('adminMessage');
+
+        try {
+            // Target the .htaccess protected directory
+            const res = await fetch(ADMIN_API, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+
+            const result = await res.json();
+            if (res.ok) {
+                msg.style.color = "green";
+                msg.innerText = "Success: " + result.message;
+                e.target.reset();
+            } else {
+                msg.style.color = "red";
+                msg.innerText = "Error: " + (result.error || "Forbidden");
+            }
+        } catch (err) {
+            msg.innerText = "Network Error: Could not reach Admin API";
+        }
+    };
+}
 
 /* ==========================
    LOAD METRICS
@@ -11,7 +119,7 @@ async function loadMetrics() {
   const type = document.getElementById("typeFilter").value;
   const session = document.getElementById("sessionFilter").value;
 
-  let url = API_BASE;
+  let url = METRICS_API_BASE;
   const params = new URLSearchParams();
 
   if (type) params.append("type", type);
@@ -307,15 +415,15 @@ if (manualForm) {
     }
 
     // 2. Prepare URL and Method based on REST standards
-    let url = API_BASE;
+    let url = METRICS_API_BASE;
     let method = 'POST'; // Default for Create
 
     if (operation === "update") {
       method = 'PUT';
-      url = `${API_BASE}/${id}`; // Path-based ID for REST
+      url = `${METRICS_API_BASE}/${id}`; // Path-based ID for REST
     } else if (operation === "delete") {
       method = 'DELETE';
-      url = `${API_BASE}/${id}`; // Path-based ID for REST
+      url = `${METRICS_API_BASE}/${id}`; // Path-based ID for REST
     }
 
     // 3. Prepare Payload (Not needed for DELETE)
