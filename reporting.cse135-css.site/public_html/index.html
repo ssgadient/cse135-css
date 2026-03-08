@@ -25,6 +25,11 @@
     <button onclick="openModal('delete')" style="background-color: #d30000; color: white; border: none; border-radius: 4px; padding: 0 15px; cursor: pointer;">- Delete Entry</button>
   </section>
 
+  <section class="chart-container">
+    <h2>Event Type Distribution</h2>
+    <canvas id="eventChart"></canvas>
+  </section>
+
   <section class="table-container">
     <div class="table-scroll">
       <table id="metricsTable">
@@ -75,6 +80,7 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="scripts/app.js"></script>
 </body>
 </html>

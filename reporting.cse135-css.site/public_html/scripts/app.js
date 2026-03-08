@@ -1,5 +1,11 @@
 const API_BASE = "/api/metrics";
 
+let eventChart = null;
+
+/* ==========================
+   LOAD METRICS
+========================== */
+
 async function loadMetrics() {
   const id = document.getElementById("idFilter").value;
   const type = document.getElementById("typeFilter").value;
@@ -37,6 +43,7 @@ async function loadMetrics() {
     }
 
     renderTable(data);
+    renderChart(data);
 
   } catch (err) {
     // This catches network failures or JSON parsing errors
@@ -44,6 +51,10 @@ async function loadMetrics() {
     alert("Connection error: Could not reach the reporting server.");
   }
 }
+
+/* ==========================
+   TABLE RENDER
+========================== */
 
 function renderTable(rows) {
   const tbody = document.querySelector("#metricsTable tbody");
@@ -74,7 +85,43 @@ function renderTable(rows) {
 }
 
 /* ==========================
-   JSON → TABLE RENDERER
+   CHART RENDER
+========================== */
+
+function renderChart(rows) {
+
+  const counts = {};
+
+  rows.forEach(row => {
+    const type = row.event_type || "unknown";
+    counts[type] = (counts[type] || 0) + 1;
+  });
+
+  const labels = Object.keys(counts);
+  const values = Object.values(counts);
+
+  const ctx = document.getElementById("eventChart");
+
+  if (!ctx) return;
+
+  if (eventChart) {
+    eventChart.destroy();
+  }
+
+  eventChart = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: labels,
+      datasets: [{
+        label: "Event Count",
+        data: values
+      }]
+    }
+  });
+}
+
+/* ==========================
+   JSON RENDER
 ========================== */
 
 function renderJSON(jsonString) {
@@ -106,7 +153,9 @@ function buildJSONTable(obj) {
     valueCell.className = "json-value";
 
     if (typeof value === "object" && value !== null) {
+
       const details = document.createElement("details");
+
       const summary = document.createElement("summary");
       summary.textContent = Array.isArray(value)
         ? `Array (${value.length})`
@@ -116,19 +165,27 @@ function buildJSONTable(obj) {
       details.appendChild(buildJSONTable(value));
 
       valueCell.appendChild(details);
+
     } else {
       valueCell.textContent = value;
     }
 
     row.appendChild(keyCell);
     row.appendChild(valueCell);
+
     table.appendChild(row);
+
   });
 
   return table;
 }
 
+/* ==========================
+   DATE FORMATTER
+========================== */
+
 function formatDate(ts) {
+
   if (!ts) return "";
 
   // Create a Date object. 
@@ -160,7 +217,7 @@ function openModal(operation = "create") {
   const modal = document.getElementById('metricModal');
   const submitBtn = document.querySelector('.btn-submit');
   const title = document.querySelector('.modal-content h3');
-  
+
   if (!modal || !submitBtn) return;
   modal.style.display = 'flex';
 
@@ -179,6 +236,7 @@ function openModal(operation = "create") {
   // 4. Apply Visual Styles and Text
   submitBtn.setAttribute('name', operation);
   if (isCreate) {
+
     title.textContent = "New Metric Entry";
     submitBtn.textContent = "Create Entry";
     submitBtn.style.backgroundColor = "#28a745"; // Green
@@ -186,16 +244,20 @@ function openModal(operation = "create") {
     document.getElementById('manualForm').reset();
   } 
   else if (isUpdate) {
+
     title.textContent = "Update Metric Entry";
     submitBtn.textContent = "Update Entry";
     submitBtn.style.backgroundColor = "#ffed29"; // Yellow
     submitBtn.style.color = "#000"; // Black text for readability // Set name attribute for form submission
-  } 
+  }
+
   else if (isDelete) {
+
     title.textContent = "Delete Metric Entry";
     submitBtn.textContent = "Delete Entry";
     submitBtn.style.backgroundColor = "#d30000"; // Red
     submitBtn.style.color = "#fff";
+
   }
 }
 
@@ -203,6 +265,7 @@ function openModal(operation = "create") {
  * Helper to toggle display of inputs and their specific label IDs
  */
 function toggleField(id, show) {
+
   const field = document.getElementById(id);
   const label = document.getElementById(id + '_label');
   const displayMode = show ? 'block' : 'none';
@@ -237,8 +300,10 @@ if (manualForm) {
 
     // 1. Basic Validation for ID-dependent operations
     if ((operation === "update" || operation === "delete") && !id) {
+
       alert(`Please enter an ID to ${operation}.`);
       return;
+
     }
 
     // 2. Prepare URL and Method based on REST standards
@@ -255,17 +320,20 @@ if (manualForm) {
 
     // 3. Prepare Payload (Not needed for DELETE)
     let bodyData = null;
+
     if (operation !== "delete") {
       const dataInput = document.getElementById('m_data').value;
       let parsedData = {};
 
       try {
+
         if (dataInput.trim() !== "") {
           parsedData = JSON.parse(dataInput);
         }
       } catch (err) {
         alert("Invalid JSON format in the Data field.");
         return;
+
       }
 
       bodyData = JSON.stringify({
@@ -276,20 +344,26 @@ if (manualForm) {
         client_timestamp: Math.floor(Date.now() / 1000),
         event_data: parsedData
       });
+
     }
 
     // 4. Execute Request
     try {
+
       const options = {
+
         method: method,
         headers: { 'Content-Type': 'application/json' }
       };
+
       if (bodyData) options.body = bodyData;
 
       const res = await fetch(url, options);
 
       if (res.ok) {
+
         alert(`Metric ${operation}d successfully!`);
+
         closeModal();
         loadMetrics(); // Refresh the table
       } else {
@@ -298,7 +372,7 @@ if (manualForm) {
       }
     } catch (err) {
         console.error("Fetch error:", err);
-        alert("Could not connect to the API.");
+      alert("Could not connect to the API.");
     }
-});
+  });
 }
