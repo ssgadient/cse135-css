@@ -39,6 +39,10 @@ Beyond ideas from the collector tutorial from the CSE135.site, in collector.js i
 
 ## Homework 4
 
-**Changes made to collector.js beyond ideas:**
+**Analytics Backend System Issues Being Resolved:**
 
-Part 2: app.js acts as the frontend  and user interface which requests data from another file metrics.php, acts as the backend and fetcher of data which then connects back to app.js in order to display the data in the user interface as an HTML table
+Part 1: We use the bcrypt hash function provided by php to securely store user passwords in the sql database. Every endpoint checks if a session is active and if not, redirects to the login page. A separate signup page is available to admins, and is protected by htaccess. On the login page, 401s are sent as 403s to prevent html from sending an unauthorized message popup (due to www-authenticate flag on the server).
+
+Part 2: The file app.js acts as the frontend  and user interface which requests data from another file metrics.php, acts as the backend and fetcher of data which then connects back to app.js in order to display the data in the user interface as an HTML table
+
+Part 3: The reporting dashboard visualizes analytics data using Chart.js. Data is retrieved from the existing /api/metrics endpoint and aggregated by event_type in the frontend. The results are rendered as a bar chart showing the distribution of event types collected by the analytics system.
