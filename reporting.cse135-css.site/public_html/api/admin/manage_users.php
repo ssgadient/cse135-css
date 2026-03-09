@@ -3,12 +3,7 @@
 session_start();
 header("Content-Type: application/json");
 
-// 1. Session check for extra security (MVC standard)
-if (!isset($_SESSION['user_id'])) {
-    http_response_code(401);
-    echo json_encode(["error" => "Unauthorized"]);
-    exit();
-}
+// No session check, protected by .htaccess Basic Auth
 
 $config = include('../../../db_config.php');
 

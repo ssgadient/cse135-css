@@ -9,20 +9,6 @@ let eventChart = null;
    AUTHENTICATION LOGIC
 ========================== */
 
-document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Check if user is logged in via GET request to login.php
-    try {
-        const checkRes = await fetch(LOGIN_API, { method: 'GET' });
-        if (checkRes.ok) {
-            showDashboard();
-        } else {
-            showLogin();
-        }
-    } catch (err) {
-        showLogin();
-    }
-});
-
 function showLogin() {
     document.getElementById('loginContainer').style.display = 'block';
     document.getElementById('dashboardContainer').style.display = 'none';
@@ -46,7 +32,7 @@ function showLogin() {
     };
 }
 
-// 1. View Switching Logic
+// View Switching Logic
 function showView(viewName) {
     document.getElementById('overviewView').style.display = viewName === 'overview' ? 'block' : 'none';
     document.getElementById('adminView').style.display = viewName === 'admin' ? 'block' : 'none';
