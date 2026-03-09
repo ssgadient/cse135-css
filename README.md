@@ -36,3 +36,9 @@ Approach 3: Free Choice Discussion - In evaluating Userpilot’s reporting and a
 **Changes made to collector.js beyond ideas:**
 
 Beyond ideas from the collector tutorial from the CSE135.site, in collector.js images and CSS are checked using runtime detection because there are no built-in browser flags for either. For images, the script creates a small Image object and assigns it a valid source. If the onload event fires, images are enabled, and if onerror fires, they are blocked. For CSS, the script dynamically creates a test element, applies a style (like display: none), and then uses getComputedStyle() to verify that the style was actually applied. These checks were added to the initial static page-load event so the environment information (image and CSS support) could be included in the data sent to the server and stored in the database.
+
+## Homework 4
+
+**Changes made to collector.js beyond ideas:**
+
+Part 2: app.js acts as the frontend  and user interface which requests data from another file metrics.php, acts as the backend and fetcher of data which then connects back to app.js in order to display the data in the user interface as an HTML table
