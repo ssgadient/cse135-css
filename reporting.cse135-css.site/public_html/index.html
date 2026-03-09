@@ -27,21 +27,20 @@
     <header style="display: flex; justify-content: space-between; align-items: center; padding: 0 20px;">
       <h1>Metrics Dashboard</h1>
       <div>
-        <button onclick="window.location.href='/'" style="padding: 8px 15px; cursor: pointer;">Overview</button>
         <button onclick="window.location.href='/api/admin/'" style="padding: 8px 15px; cursor: pointer;">Admin (User Mgmt)</button>
         <button id="logoutBtn" style="background-color: #6c757d; color: white; border: none; border-radius: 4px; padding: 8px 15px; cursor: pointer; margin-left: 10px;">Logout</button>
       </div>
     </header>
 
-    <div id="overviewView">
+    <div id="dashboardContent" style="padding: 20px;">
       <section class="controls">
         <input id="idFilter" placeholder="Filter by ID">
         <input id="typeFilter" placeholder="Filter by event type">
         <input id="sessionFilter" placeholder="Filter by session id">
-        <button onclick="loadMetrics()">Load Metrics</button>
-        <button onclick="openModal('create')" style="background-color: #28a745; color: white; border: none; border-radius: 4px; padding: 0 15px; cursor: pointer;">+ Add Entry</button>
-        <button onclick="openModal('update')" style="background-color: #ffed29; color: white; border: none; border-radius: 4px; padding: 0 15px; cursor: pointer;">Update Entry</button>
-        <button onclick="openModal('delete')" style="background-color: #d30000; color: white; border: none; border-radius: 4px; padding: 0 15px; cursor: pointer;">- Delete Entry</button>
+        <button onclick="loadMetrics()" style="background-color: #2563eb;">Load Metrics</button>
+        <button onclick="openModal('create')" style="background-color: #28a745;">+ Add Entry</button>
+        <button onclick="openModal('update')" style="background-color: #ffed29;">Update Entry</button>
+        <button onclick="openModal('delete')" style="background-color: #d30000;">- Delete Entry</button>
       </section>
 
       <section class="chart-container">

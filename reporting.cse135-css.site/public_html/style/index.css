@@ -26,11 +26,11 @@ header {
 }
 
 .controls button {
-  padding: 8px 14px;
-  background: #2563eb;
   border: none;
   color: white;
   cursor: pointer;
+  border-radius: 4px; 
+  padding: 0 15px; 
 }
 
 .controls button:hover {
