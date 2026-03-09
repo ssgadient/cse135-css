@@ -9,6 +9,19 @@ let eventChart = null;
    AUTHENTICATION LOGIC
 ========================== */
 
+function toggleView(isAuthenticated) {
+    const loginContainer = document.getElementById('loginContainer');
+    const dashboardContainer = document.getElementById('dashboardContainer');
+    
+    if (isAuthenticated) {
+        loginContainer.style.display = 'none';
+        dashboardContainer.style.display = 'block';
+    } else {
+        loginContainer.style.display = 'block';
+        dashboardContainer.style.display = 'none';
+    }
+}
+
 function showLogin() {
     document.getElementById('loginContainer').style.display = 'block';
     document.getElementById('dashboardContainer').style.display = 'none';
@@ -37,12 +50,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         const checkRes = await fetch(LOGIN_API, { method: 'GET' }); // Check session
         if (checkRes.ok) {
-            document.getElementById('loginContainer').style.display = 'none';
-            document.getElementById('dashboardContainer').style.display = 'block';
+            toggleView(true);
             loadMetrics();
             setupAuthHandlers();
         } else {
-            document.getElementById('loginContainer').style.display = 'block';
+            toggleView(false);
             showLogin();
         }
     } catch (err) {

@@ -38,6 +38,27 @@ header {
 }
 
 /* ==========================
+   LOGIN FORM
+========================== */
+
+/* Center the text inside the input fields */
+#loginForm input {
+    display: block; /* Ensures they stack properly */
+    margin: 0 auto 10px auto; /* Centers the input element itself */
+    width: 100%;
+    box-sizing: border-box; /* Ensures padding doesn't break width */
+}
+
+/* Ensure the form container is centered */
+#loginForm {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+/* ==========================
    TABLE VIEWPORT
 ========================== */
 
