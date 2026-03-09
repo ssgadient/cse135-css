@@ -27,8 +27,8 @@
     <header style="display: flex; justify-content: space-between; align-items: center; padding: 0 20px;">
       <h1>Metrics Dashboard</h1>
       <div>
-        <button onclick="showView('overview')" style="padding: 8px 15px; cursor: pointer;">Overview</button>
-        <button onclick="showView('admin')" style="padding: 8px 15px; cursor: pointer;">Admin (User Mgmt)</button>
+        <button onclick="window.location.href='/'" style="padding: 8px 15px; cursor: pointer;">Overview</button>
+        <button onclick="window.location.href='/api/admin/'" style="padding: 8px 15px; cursor: pointer;">Admin (User Mgmt)</button>
         <button id="logoutBtn" style="background-color: #6c757d; color: white; border: none; border-radius: 4px; padding: 8px 15px; cursor: pointer; margin-left: 10px;">Logout</button>
       </div>
     </header>
@@ -60,18 +60,7 @@
         </div>
       </section>
     </div>
-
-    <div id="adminView" style="display: none;">
-      <section class="controls" style="max-width: 500px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
-        <h3 style="margin-top: 0;">Create Authorized Dashboard User</h3>
-        <form id="createUserForm">
-          <input type="text" id="newUsername" placeholder="New Username" required style="width: 100%; margin-bottom: 10px;">
-          <input type="password" id="newPassword" placeholder="New Password" required style="width: 100%; margin-bottom: 10px;">
-          <button type="submit" style="width: 100%; background-color: #28a745; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer;">Add User</button>
-        </form>
-        <div id="adminMessage" style="margin-top: 15px; font-weight: bold;"></div>
-      </section>
-    </div>
+    
   </main>
 
   <div id="metricModal" class="modal-overlay">

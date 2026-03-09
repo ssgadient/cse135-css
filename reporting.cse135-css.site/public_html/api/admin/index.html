@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin - User Management</title>
+  <link rel="stylesheet" href="../../style/index.css">
+</head>
+<body>
+  <nav><a href="/">Back to Dashboard</a></nav>
+
+  <section class="controls" style="max-width: 500px; margin: 50px auto;">
+    <h3>Create New Dashboard User</h3>
+    <form id="createUserForm">
+      <input type="text" id="newUsername" placeholder="New Username" required>
+      <input type="password" id="newPassword" placeholder="New Password" required>
+      <button type="submit">Add User</button>
+    </form>
+    <div id="adminMessage"></div>
+  </section>
+
+  <script>
+    document.getElementById('createUserForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('newUsername').value;
+      const password = document.getElementById('newPassword').value;
+      
+      const res = await fetch('/api/admin/manage_users', { // Calls /api/admin/manage_users
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+
+      const result = await res.json();
+      document.getElementById('adminMessage').innerText = res.ok ? "Success!" : "Error: " + result.error;
+    };
+  </script>
+</body>
+</html>

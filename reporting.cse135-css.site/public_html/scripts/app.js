@@ -32,16 +32,6 @@ function showLogin() {
     };
 }
 
-// View Switching Logic
-function showView(viewName) {
-    document.getElementById('overviewView').style.display = viewName === 'overview' ? 'block' : 'none';
-    document.getElementById('adminView').style.display = viewName === 'admin' ? 'block' : 'none';
-    
-    if (viewName === 'overview') {
-        loadMetrics(); // Refresh data when returning to overview
-    }
-}
-
 // Authentication Gatekeeper
 document.addEventListener('DOMContentLoaded', async () => {
     try {
@@ -49,7 +39,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (checkRes.ok) {
             document.getElementById('loginContainer').style.display = 'none';
             document.getElementById('dashboardContainer').style.display = 'block';
-            showView('overview');
+            loadMetrics();
             setupAuthHandlers();
         } else {
             document.getElementById('loginContainer').style.display = 'block';
