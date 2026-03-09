@@ -304,8 +304,6 @@ function formatDate(ts) {
   return date.toLocaleString();
 }
 
-loadMetrics();
-
 /* ==========================
    NEW: MODAL & POST FEATURES
 ========================== */
