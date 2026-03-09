@@ -38,7 +38,9 @@ function showLogin() {
         });
 
         if (res.ok) {
-            window.location.reload(); // Refresh to trigger showDashboard()
+            toggleView(true);
+            loadMetrics();
+            setupLogoutHandler(); // Setup logout handler
         } else {
             document.getElementById('loginError').innerText = "Invalid username or password";
         }
@@ -52,7 +54,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (checkRes.ok) {
             toggleView(true);
             loadMetrics();
-            setupAuthHandlers();
+            setupLogoutHandler(); // Setup logout handler
         } else {
             toggleView(false);
             showLogin();
@@ -62,42 +64,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-// Admin User Creation
-function setupAuthHandlers() {
+// Logout Handler
+function setupLogoutHandler() {
     document.getElementById('logoutBtn').onclick = async () => {
         await fetch(LOGOUT_API, { method: 'POST' });
         window.location.reload();
-    };
-
-    document.getElementById('createUserForm').onsubmit = async (e) => {
-        e.preventDefault();
-        const username = document.getElementById('newUsername').value;
-        const password = document.getElementById('newPassword').value;
-        const msg = document.getElementById('adminMessage');
-
-        try {
-            // Target the .htaccess protected directory
-            const res = await fetch(ADMIN_API, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
-            });
-
-            const result = await res.json();
-            if (res.status === 403) {
-                msg.style.color = "red";
-                msg.innerText = "Error: Access Denied (403)";
-            } else if (res.ok) {
-                msg.style.color = "green";
-                msg.innerText = "Success: " + result.message;
-                e.target.reset();
-            } else {
-                msg.style.color = "red";
-                msg.innerText = "Error: " + (result.error || "Forbidden");
-            }
-        } catch (err) {
-            msg.innerText = "Network Error: Could not reach Admin API";
-        }
     };
 }
 

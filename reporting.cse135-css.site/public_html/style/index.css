@@ -59,6 +59,44 @@ header {
 }
 
 /* ==========================
+   ADMIN FORM
+========================== */
+
+/* Ensure the card content is centered and items are full width */
+.admin-card {
+    display: flex;
+    flex-direction: column;
+    max-width: 400px;    /* Optional: constrain width for better form aesthetics */
+    margin: 50px auto;
+    padding: 30px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Force form to occupy the full width of the card */
+.admin-card form {
+    width: 100%;
+}
+
+/* Uniform styling for inputs and button */
+.admin-card input, 
+.admin-card button {
+    width: 100%;           /* Ensures they match in width */
+    padding: 12px;
+    margin: 10px 0;
+    box-sizing: border-box; /* Crucial: padding doesn't affect total width */
+    display: block;
+}
+
+.admin-card button {
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    text-align: center; /* Centers text inside the input */
+}
+
+/* ==========================
    TABLE VIEWPORT
 ========================== */
 

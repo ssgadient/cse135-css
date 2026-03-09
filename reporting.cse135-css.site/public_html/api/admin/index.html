@@ -6,32 +6,34 @@
   <link rel="stylesheet" href="../../style/index.css">
 </head>
 <body>
-  <nav><a href="/">Back to Dashboard</a></nav>
+  <header style="background: #1f2937; padding: 20px; display: flex; align-items: center;">
+    <button onclick="window.location.href='/'" style="padding: 8px 15px; cursor: pointer; border-radius: 4px; border: none; background: #6c757d; color: white;">&larr; Back to Dashboard</button>
+    <h2 style="color: white; margin: 0 0 0 20px;">Admin Panel</h2>
+  </header>
 
-  <section class="controls" style="max-width: 500px; margin: 50px auto;">
-    <h3>Create New Dashboard User</h3>
+  <div class="admin-card">
+    <h3 style="margin-top: 0;">Create New Dashboard User</h3>
     <form id="createUserForm">
-      <input type="text" id="newUsername" placeholder="New Username" required>
-      <input type="password" id="newPassword" placeholder="New Password" required>
-      <button type="submit">Add User</button>
+        <input type="text" id="newUsername" placeholder="New Username" required>
+        <input type="password" id="newPassword" placeholder="New Password" required>
+        <button type="submit">Add User</button>
     </form>
-    <div id="adminMessage"></div>
-  </section>
+    <div id="adminMessage" style="margin-top: 15px; font-weight: bold;"></div>
+  </div>
 
   <script>
     document.getElementById('createUserForm').onsubmit = async (e) => {
       e.preventDefault();
-      const username = document.getElementById('newUsername').value;
-      const password = document.getElementById('newPassword').value;
-      
-      const res = await fetch('/api/admin/manage_users', { // Calls /api/admin/manage_users
+      const res = await fetch('manage_users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify({ 
+            username: document.getElementById('newUsername').value, 
+            password: document.getElementById('newPassword').value 
+        })
       });
-
       const result = await res.json();
-      document.getElementById('adminMessage').innerText = res.ok ? "Success!" : "Error: " + result.error;
+      document.getElementById('adminMessage').innerText = res.ok ? "Success!" : "Error: " + (result.error || "Denied");
     };
   </script>
 </body>
