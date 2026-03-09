@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             setupAuthHandlers();
         } else {
             document.getElementById('loginContainer').style.display = 'block';
-            initLoginHandler();
+            showLogin();
         }
     } catch (err) {
         document.getElementById('loginContainer').style.display = 'block';
