@@ -82,7 +82,10 @@ function setupAuthHandlers() {
             });
 
             const result = await res.json();
-            if (res.ok) {
+            if (res.status === 403) {
+                msg.style.color = "red";
+                msg.innerText = "Error: Access Denied (403)";
+            } else if (res.ok) {
                 msg.style.color = "green";
                 msg.innerText = "Success: " + result.message;
                 e.target.reset();
