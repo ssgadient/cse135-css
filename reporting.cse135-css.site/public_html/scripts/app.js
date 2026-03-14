@@ -373,9 +373,17 @@ function formatDate(ts) {
   return date.toLocaleString();
 }
 
-function exportPDF(){
+/* ==========================
+   PDF EXPORT
+========================== */
+window.exportPDF = function () {
 
 const element = document.getElementById("dashboardContainer");
+
+const scrollBox = document.querySelector(".table-scroll");
+const originalHeight = scrollBox.style.height;
+
+scrollBox.style.height = "auto";
 
 const opt = {
 margin:0.5,
@@ -385,9 +393,11 @@ html2canvas:{ scale:2 },
 jsPDF:{ unit:'in', format:'letter', orientation:'portrait' }
 };
 
-html2pdf().set(opt).from(element).save();
+html2pdf().set(opt).from(element).save().then(() => {
+scrollBox.style.height = originalHeight;
+});
 
-}
+};
 
 /* ==========================
    NEW: MODAL & POST FEATURES
