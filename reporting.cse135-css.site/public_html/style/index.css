@@ -223,3 +223,79 @@ summary {
   cursor: pointer; 
   flex: 1; 
 }
+/* ==========================
+   DASHBOARD LAYOUT
+========================== */
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-actions button {
+  margin-left: 8px;
+  padding: 8px 14px;
+  background: #2563eb;
+}
+
+/* ==========================
+   FILTER BAR
+========================== */
+
+.filters {
+  padding: 20px;
+  background: white;
+  border-bottom: 1px solid #ddd;
+}
+
+.filters h2 {
+  margin-bottom: 10px;
+}
+
+.filter-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.filter-row input {
+  padding: 8px;
+  width: 220px;
+}
+
+/* ==========================
+   CHART GRID
+========================== */
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+.chart-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.chart-card canvas {
+  width: 100%;
+  height: 260px;
+}
+
+/* ==========================
+   EXPORT BUTTON
+========================== */
+
+.export-btn {
+  background: #059669;
+}
+
+.export-btn:hover {
+  background: #047857;
+}

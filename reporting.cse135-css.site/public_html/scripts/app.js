@@ -4,6 +4,9 @@ const LOGOUT_API = "/api/logout";
 const ADMIN_API = "/api/admin/manage_users";
 
 let eventChart = null;
+let timeChart = null;
+let referrerChart = null;
+let sessionChart = null;
 
 /* ==========================
    AUTHENTICATION LOGIC
@@ -77,6 +80,7 @@ function setupLogoutHandler() {
 ========================== */
 
 async function loadMetrics() {
+
   const id = document.getElementById("idFilter").value;
   const type = document.getElementById("typeFilter").value;
   const session = document.getElementById("sessionFilter").value;
@@ -95,6 +99,7 @@ async function loadMetrics() {
   }
 
   try {
+
     const res = await fetch(url);
 
     // 1. Check if the server returned an error (like 404)
@@ -102,7 +107,7 @@ async function loadMetrics() {
       const errorData = await res.json();
       // Use the 'error' field sent by your PHP (e.g., "Not found")
       alert(`Error ${res.status}: ${errorData.error || 'Request failed'}`);
-      return; // Exit the function so we don't try to render
+      return;
     }
 
     let data = await res.json();
@@ -113,12 +118,16 @@ async function loadMetrics() {
     }
 
     renderTable(data);
-    renderChart(data);
+    renderEventChart(data);
+    renderTimeChart(data);
+    renderReferrerChart(data);
+    renderSessionChart(data);
 
   } catch (err) {
     // This catches network failures or JSON parsing errors
     console.error("Fetch error:", err);
     alert("Connection error: Could not reach the reporting server.");
+
   }
 }
 
@@ -127,10 +136,12 @@ async function loadMetrics() {
 ========================== */
 
 function renderTable(rows) {
+
   const tbody = document.querySelector("#metricsTable tbody");
   tbody.innerHTML = "";
 
   rows.forEach(row => {
+
     const tr = document.createElement("tr");
 
     const dataCell = document.createElement("td");
@@ -151,14 +162,15 @@ function renderTable(rows) {
 
     tr.appendChild(dataCell);
     tbody.appendChild(tr);
+
   });
 }
 
 /* ==========================
-   CHART RENDER
+   CHARTS
 ========================== */
 
-function renderChart(rows) {
+function renderEventChart(rows) {
 
   const counts = {};
 
@@ -167,34 +179,117 @@ function renderChart(rows) {
     counts[type] = (counts[type] || 0) + 1;
   });
 
-  const labels = Object.keys(counts);
-  const values = Object.values(counts);
-
   const ctx = document.getElementById("eventChart");
 
   if (!ctx) return;
 
-  if (eventChart) {
-    eventChart.destroy();
-  }
+  if (eventChart) eventChart.destroy();
 
   eventChart = new Chart(ctx, {
     type: "bar",
     data: {
-      labels: labels,
+      labels: Object.keys(counts),
       datasets: [{
         label: "Event Count",
-        data: values
+        data: Object.values(counts)
+      }]
+    }
+  });
+}
+
+function renderTimeChart(rows) {
+
+  const counts = {};
+
+  rows.forEach(row => {
+
+    const time = new Date(row.server_timestamp).toLocaleTimeString();
+
+    counts[time] = (counts[time] || 0) + 1;
+
+  });
+
+  const ctx = document.getElementById("timeChart");
+  if (!ctx) return;
+
+  if (timeChart) timeChart.destroy();
+
+  timeChart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: Object.keys(counts),
+      datasets: [{
+        label: "Events Over Time",
+        data: Object.values(counts)
+      }]
+    }
+  });
+}
+
+function renderReferrerChart(rows) {
+
+  const counts = {};
+
+  rows.forEach(row => {
+
+    const ref = row.referrer || "Direct";
+
+    counts[ref] = (counts[ref] || 0) + 1;
+
+  });
+
+  const ctx = document.getElementById("referrerChart");
+  if (!ctx) return;
+
+  if (referrerChart) referrerChart.destroy();
+
+  referrerChart = new Chart(ctx, {
+    type: "pie",
+    data: {
+      labels: Object.keys(counts),
+      datasets: [{
+        label: "Referrers",
+        data: Object.values(counts)
+      }]
+    }
+  });
+}
+
+function renderSessionChart(rows) {
+
+  const counts = {};
+
+  rows.forEach(row => {
+
+    const session = row.session_id || "unknown";
+
+    counts[session] = (counts[session] || 0) + 1;
+
+  });
+
+  const ctx = document.getElementById("sessionChart");
+  if (!ctx) return;
+
+  if (sessionChart) sessionChart.destroy();
+
+  sessionChart = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: Object.keys(counts).slice(0,10),
+      datasets: [{
+        label: "Events per Session",
+        data: Object.values(counts).slice(0,10)
       }]
     }
   });
 }
 
 /* ==========================
-   JSON RENDER
+   JSON + DATE UTILITIES
 ========================== */
 
 function renderJSON(jsonString) {
+
   let data;
 
   try {
@@ -206,30 +301,28 @@ function renderJSON(jsonString) {
   }
 
   return buildJSONTable(data);
+
 }
 
 function buildJSONTable(obj) {
-  const table = document.createElement("table");
-  table.className = "json-table";
 
-  Object.entries(obj).forEach(([key, value]) => {
+  const table = document.createElement("table");
+
+  Object.entries(obj).forEach(([key,value]) => {
+
     const row = document.createElement("tr");
 
     const keyCell = document.createElement("td");
-    keyCell.className = "json-key";
     keyCell.textContent = key;
 
     const valueCell = document.createElement("td");
-    valueCell.className = "json-value";
 
     if (typeof value === "object" && value !== null) {
 
       const details = document.createElement("details");
-
       const summary = document.createElement("summary");
-      summary.textContent = Array.isArray(value)
-        ? `Array (${value.length})`
-        : "Object";
+
+      summary.textContent = Array.isArray(value) ? `Array (${value.length})` : "Object";
 
       details.appendChild(summary);
       details.appendChild(buildJSONTable(value));
@@ -237,7 +330,9 @@ function buildJSONTable(obj) {
       valueCell.appendChild(details);
 
     } else {
+
       valueCell.textContent = value;
+
     }
 
     row.appendChild(keyCell);
@@ -248,6 +343,7 @@ function buildJSONTable(obj) {
   });
 
   return table;
+
 }
 
 /* ==========================
@@ -262,7 +358,7 @@ function formatDate(ts) {
   // If ts is a string like "2026-02-28...", Date() will parse it.
   // If it is a number, we apply your existing logic for seconds/milliseconds.
   let date;
-  
+
   if (isNaN(ts)) {
     // Handle string format "2026-02-28 05:49:34"
     date = new Date(ts);
@@ -275,6 +371,22 @@ function formatDate(ts) {
 
   // toLocaleString() provides the "M/D/YYYY, H:MM:SS AM/PM" format by default
   return date.toLocaleString();
+}
+
+function exportPDF(){
+
+const element = document.getElementById("dashboardContainer");
+
+const opt = {
+margin:0.5,
+filename:'metrics-report.pdf',
+image:{ type:'jpeg', quality:0.98 },
+html2canvas:{ scale:2 },
+jsPDF:{ unit:'in', format:'letter', orientation:'portrait' }
+};
+
+html2pdf().set(opt).from(element).save();
+
 }
 
 /* ==========================

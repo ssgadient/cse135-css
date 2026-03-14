@@ -5,92 +5,104 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>Metrics Reporting</title>
   <link rel="stylesheet" href="style/index.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 
 <body>
 
-  <div id="loginContainer" style="display: none; padding: 50px; text-align: center;">
-    <section class="controls" style="max-width: 400px; margin: auto; display: block;">
-      <h2 style="margin-top: 0;">Dashboard Login</h2>
-      <form id="loginForm">
-        <input type="text" id="username" placeholder="Username" required style="width: 100%; margin-bottom: 10px;">
-        <input type="password" id="password" placeholder="Password" required style="width: 100%; margin-bottom: 10px;">
-        <button type="submit" style="width: 100%; background-color: #007bff; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer;">
-          Log In
-        </button>
-      </form>
-      <div id="loginError" style="color: #d30000; margin-top: 10px; font-weight: bold;"></div>
-    </section>
-  </div>
+<div id="loginContainer" style="display:none;padding:50px;text-align:center;">
 
-  <main id="dashboardContainer" style="display: none;">
-    <header style="display: flex; justify-content: space-between; align-items: center; padding: 0 20px;">
-      <h1>Metrics Dashboard</h1>
-      <div>
-        <button onclick="window.location.href='/api/admin/'" style="background-color: #d26410; color: white; border: none; border-radius: 4px; padding: 8px 15px; cursor: pointer; margin-left: 10px;">Admin (User Mgmt)</button>
-        <button id="logoutBtn" style="background-color: #6c757d; color: white; border: none; border-radius: 4px; padding: 8px 15px; cursor: pointer; margin-left: 10px;">Logout</button>
-      </div>
-    </header>
+<section class="controls" style="max-width:400px;margin:auto;display:block;">
 
-    <div id="dashboardContent" style="padding: 20px;">
-      <section class="controls">
-        <input id="idFilter" placeholder="Filter by ID">
-        <input id="typeFilter" placeholder="Filter by event type">
-        <input id="sessionFilter" placeholder="Filter by session id">
-        <button onclick="loadMetrics()" style="background-color: #2563eb;">Load Metrics</button>
-        <button onclick="openModal('create')" style="background-color: #28a745;">+ Add Entry</button>
-        <button onclick="openModal('update')" style="background-color: #ffed29;">Update Entry</button>
-        <button onclick="openModal('delete')" style="background-color: #d30000;">- Delete Entry</button>
-      </section>
+<h2>Dashboard Login</h2>
 
-      <section class="chart-container">
-        <h2>Event Type Distribution</h2>
-        <canvas id="eventChart"></canvas>
-      </section>
+<form id="loginForm">
+<input type="text" id="username" placeholder="Username" required>
+<input type="password" id="password" placeholder="Password" required>
+<button type="submit">Log In</button>
+</form>
 
-      <section class="table-container">
-        <div class="table-scroll">
-          <table id="metricsTable">
-            <thead>
-              <tr><th>ID</th><th>Session</th><th>Event</th><th>Page</th><th>Title</th><th>Referrer</th><th>Client Time</th><th>Server Time</th><th>IP</th><th>Data</th></tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </section>
-    </div>
-    
-  </main>
+<div id="loginError"></div>
 
-  <div id="metricModal" class="modal-overlay">
-    <div class="modal-content">
-      <h3 style="margin-top: 0;">Manual Metric Entry</h3>
-      <form id="manualForm">
-        <label for="m_id" id="m_id_label">ID</label>
-        <input type="text" id="m_id" placeholder="ID">
+</section>
+</div>
 
-        <label for="m_session" id="m_session_label">Session ID</label>
-        <input type="text" id="m_session" placeholder="e.g. wcp64u2y...">
-        
-        <label for="m_type" id="m_type_label">Event Type</label>
-        <input type="text" id="m_type" placeholder="e.g. click or js-error">
-        
-        <label for="m_url" id="m_url_label">Page URL</label>
-        <input type="text" id="m_url" placeholder="https://...">
+<main id="dashboardContainer" style="display:none;">
 
-        <label for="m_data" id="m_data_label">Event Data (JSON)</label>
-        <textarea id="m_data" placeholder='{"x": 10, "y": 20}' rows="4"></textarea>
-        
-        <div class="modal-actions">
-          <!-- give a tag so that we know what operation it is submitting to the server-->
-          <button type="submit" class="btn-submit" name="create">Create Entry</button>
-          <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
-        </div>
-      </form>
-    </div>
-  </div>
+<header style="display:flex;justify-content:space-between;align-items:center;padding:0 20px;">
+<h1>Metrics Dashboard</h1>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="scripts/app.js"></script>
+<div>
+<button class="export-btn" onclick="exportPDF()">Export PDF</button>
+<button onclick="window.location.href='/api/admin/'">Admin</button>
+<button id="logoutBtn">Logout</button>
+</div>
+
+</header>
+
+<section class="controls">
+
+<input id="idFilter" placeholder="Filter by ID">
+<input id="typeFilter" placeholder="Filter by event type">
+<input id="sessionFilter" placeholder="Filter by session id">
+
+<button onclick="loadMetrics()">Load Metrics</button>
+
+</section>
+
+<section class="charts-grid">
+
+<div class="chart-card">
+<h2>Event Type Distribution</h2>
+<canvas id="eventChart"></canvas>
+</div>
+
+<div class="chart-card">
+<h2>Events Over Time</h2>
+<canvas id="timeChart"></canvas>
+</div>
+
+<div class="chart-card">
+<h2>Top Referrers</h2>
+<canvas id="referrerChart"></canvas>
+</div>
+
+<div class="chart-card">
+<h2>Events per Session</h2>
+<canvas id="sessionChart"></canvas>
+</div>
+
+</section>
+
+<section class="table-container">
+<div class="table-scroll">
+<table id="metricsTable">
+
+<thead>
+<tr>
+<th>ID</th>
+<th>Session</th>
+<th>Event</th>
+<th>Page</th>
+<th>Title</th>
+<th>Referrer</th>
+<th>Client Time</th>
+<th>Server Time</th>
+<th>IP</th>
+<th>Data</th>
+</tr>
+</thead>
+
+<tbody></tbody>
+
+</table>
+</div>
+</section>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="scripts/app.js"></script>
+
 </body>
 </html>
