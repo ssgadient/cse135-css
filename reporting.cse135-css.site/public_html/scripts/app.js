@@ -587,18 +587,18 @@ function formatDate(ts) {
 ========================== */
 window.exportPDF = async function () {
     const container = document.createElement("div");
-    
-    // Maintain landscape-friendly width
-    container.style.width = "1000px"; 
+    container.style.width = "1050px"; 
     container.style.margin = "0 auto";
     container.style.background = "white";
     container.style.fontFamily = "Arial, sans-serif";
 
-    /* Helper with reduced vertical padding and auto-height */
+    // Detect which view is active
+    const isMetricsView = document.getElementById('metricsView').style.display !== 'none';
+    const isReportsView = document.getElementById('reportsView').style.display !== 'none';
+
     const createPage = (titleText) => {
         const section = document.createElement("div");
-        section.style.padding = "20px 40px"; // Reduced top/bottom padding
-        section.style.height = "auto";       // Remove fixed 750px height
+        section.style.padding = "20px 30px";
         section.style.pageBreakAfter = "always"; 
         section.style.display = "flex";
         section.style.flexDirection = "column";
@@ -606,76 +606,102 @@ window.exportPDF = async function () {
 
         const header = document.createElement("h2");
         header.textContent = titleText;
-        header.style.margin = "0 0 15px 0"; // Tighten header margin
+        header.style.margin = "0 0 10px 0";
         section.appendChild(header);
-        
         return section;
     };
 
-    /* ===== CHARTS ===== */
-    const chartConfigs = [
-        { obj: eventChart, name: "Event Distribution" },
-        { obj: timeChart, name: "Events Over Time" },
-        { obj: referrerChart, name: "Top Referrers" },
-        { obj: sessionChart, name: "Session Activity" }
-    ];
+    /* ===== LOGIC FOR RAW METRICS VIEW ===== */
+    if (isMetricsView) {
+        const chartConfigs = [
+            { obj: eventChart, name: "Event Distribution" },
+            { obj: timeChart, name: "Events Over Time" },
+            { obj: referrerChart, name: "Top Referrers" },
+            { obj: sessionChart, name: "Session Activity" }
+        ];
 
-    chartConfigs.forEach(config => {
-        if (!config.obj) return;
-        
-        const page = createPage(config.name);
-        const img = document.createElement("img");
-        img.src = config.obj.toBase64Image();
-        
-        // Large width for landscape, but allow it to dictate its own height
-        img.style.width = "95%"; 
-        img.style.maxWidth = "950px";
-        img.style.height = "auto";
-        img.style.border = "1px solid #eee";
-        
-        page.appendChild(img);
-        container.appendChild(page);
-    });
+        // Charts: 2 per page
+        for (let i = 0; i < chartConfigs.length; i += 2) {
+            const page = createPage(`Metrics Charts ${i+1}-${i+2}`);
+            [chartConfigs[i], chartConfigs[i+1]].forEach(config => {
+                if (config && config.obj) {
+                    const img = document.createElement("img");
+                    img.src = config.obj.toBase64Image();
+                    img.style.width = "80%"; 
+                    img.style.marginBottom = "20px";
+                    page.appendChild(img);
+                }
+            });
+            container.appendChild(page);
+        }
 
-    /* ===== TABLE ===== */
-    const table = document.getElementById("metricsTable");
-    if (table) {
-        const tablePage = createPage("Full Metrics Table Preview");
-        const preview = table.cloneNode(true);
-        
-        const rows = preview.querySelectorAll("tbody tr");
-        rows.forEach((row, i) => { if (i > 15) row.remove(); });
+        // Table: High Density (30 Rows)
+        const table = document.getElementById("metricsTable");
+        if (table && table.querySelector('tbody tr')) {
+            const tablePage = createPage("Metrics Data Preview (30 Rows)");
+            const preview = table.cloneNode(true);
+            const rows = preview.querySelectorAll("tbody tr");
+            rows.forEach((row, i) => { if (i > 29) row.remove(); });
 
-        preview.style.width = "100%";
-        preview.style.borderCollapse = "collapse";
-        preview.style.fontSize = "10px";
+            preview.style.width = "100%";
+            preview.style.borderCollapse = "collapse";
+            preview.style.fontSize = "8px"; 
+            preview.style.tableLayout = "fixed"; 
 
-        preview.querySelectorAll("th, td").forEach(cell => {
-            cell.style.border = "1px solid #ccc";
-            cell.style.padding = "6px";
-        });
+            preview.querySelectorAll("th, td").forEach(cell => {
+                cell.style.border = "1px solid #ccc";
+                cell.style.padding = "4px 2px";
+                cell.style.wordBreak = "break-all";
+                cell.style.overflow = "hidden";
+            });
+            tablePage.appendChild(preview);
+            container.appendChild(tablePage);
+        }
+    } 
 
-        tablePage.appendChild(preview);
-        container.appendChild(tablePage);
+    /* ===== LOGIC FOR SAVED REPORTS VIEW ===== */
+    else if (isReportsView) {
+        const reportTitle = document.getElementById('reportTitle').innerText;
+        const selectedReport = document.getElementById('selectedReport');
+
+        if (selectedReport.style.display !== 'none') {
+            const page = createPage(`Report: ${reportTitle}`);
+            
+            // 1. Capture the specific Report Chart
+            if (reportChart) {
+                const img = document.createElement("img");
+                img.src = reportChart.toBase64Image();
+                img.style.width = "90%";
+                img.style.border = "1px solid #eee";
+                page.appendChild(img);
+            }
+
+            // 2. Capture Comments
+            const commentsDiv = document.getElementById('commentsList').cloneNode(true);
+            const commentHeader = document.createElement("h3");
+            commentHeader.innerText = "Analyst Comments";
+            commentHeader.style.marginTop = "30px";
+            
+            page.appendChild(commentHeader);
+            page.appendChild(commentsDiv);
+            container.appendChild(page);
+        } else {
+            // If viewing the list of reports but none selected
+            const page = createPage("Available Saved Reports");
+            const listClone = document.getElementById('reportsList').cloneNode(true);
+            page.appendChild(listClone);
+            container.appendChild(page);
+        }
     }
 
     document.body.appendChild(container);
-    await new Promise(r => setTimeout(r, 500));
+    await new Promise(r => setTimeout(r, 600)); // Delay for image rendering
 
     const opt = {
-        margin: 0,
-        filename: "metrics-report-compact.pdf",
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { 
-            scale: 2, 
-            useCORS: true,
-            width: 1050 
-        },
-        jsPDF: { 
-            unit: "in", 
-            format: "letter", 
-            orientation: "landscape" 
-        }
+        margin: 0.2,
+        filename: isMetricsView ? "raw-metrics.pdf" : "saved-report.pdf",
+        html2canvas: { scale: 2, useCORS: true, width: 1100 },
+        jsPDF: { unit: "in", format: "letter", orientation: "landscape" }
     };
 
     try {
