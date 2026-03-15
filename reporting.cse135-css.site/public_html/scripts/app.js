@@ -378,23 +378,46 @@ function formatDate(ts) {
 ========================== */
 window.exportPDF = function () {
 
-const element = document.getElementById("dashboardContainer");
+const dashboard = document.getElementById("dashboardContainer");
 
-const scrollBox = document.querySelector(".table-scroll");
-const originalHeight = scrollBox.style.height;
+/* clone dashboard so we don't modify the real page */
+const clone = dashboard.cloneNode(true);
 
-scrollBox.style.height = "auto";
+/* remove filter controls from export */
+const controls = clone.querySelector(".controls");
+if (controls) controls.remove();
+
+/* trim table rows to first 20 */
+const rows = clone.querySelectorAll("#metricsTable tbody tr");
+
+rows.forEach((row, index) => {
+  if (index > 19) row.remove();
+});
+
+/* remove scrolling restriction so table renders cleanly */
+const scrollBox = clone.querySelector(".table-scroll");
+if (scrollBox) {
+  scrollBox.style.height = "auto";
+  scrollBox.style.overflow = "visible";
+}
+
+/* create hidden container for rendering */
+const container = document.createElement("div");
+container.style.position = "fixed";
+container.style.left = "-9999px";
+container.appendChild(clone);
+document.body.appendChild(container);
 
 const opt = {
-margin:0.5,
-filename:'metrics-report.pdf',
-image:{ type:'jpeg', quality:0.98 },
-html2canvas:{ scale:2 },
-jsPDF:{ unit:'in', format:'letter', orientation:'portrait' }
+  margin: 0.5,
+  filename: "metrics-dashboard.pdf",
+  image: { type: "jpeg", quality: 0.98 },
+  html2canvas: { scale: 2 },
+  jsPDF: { unit: "in", format: "letter", orientation: "portrait" }
 };
 
-html2pdf().set(opt).from(element).save().then(() => {
-scrollBox.style.height = originalHeight;
+html2pdf().set(opt).from(clone).save().then(() => {
+  document.body.removeChild(container);
 });
 
 };
