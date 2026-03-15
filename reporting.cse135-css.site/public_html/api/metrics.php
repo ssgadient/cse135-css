@@ -23,6 +23,13 @@ if (!isset($_SESSION['user_id'])) {
 $role = $_SESSION['role'] ?? 'viewer';
 $sections = $_SESSION['sections'] ?? [];
 
+// Define mappings of sections to event types
+$sectionMapping = [
+    'performance' => ['load', 'fcp', 'lcp', 'fid', 'cls', 'ttfb'],
+    'behavioral'  => ['click', 'scroll', 'input', 'hover', 'submit'],
+    'errors'      => ['js-error', '404-error', 'api-error']
+];
+
 // Viewer cannot access raw metrics directly, only saved reports
 if ($role === 'viewer') {
     http_response_code(403);
@@ -97,16 +104,44 @@ if ($method === "GET") {
     $conditions = [];
     $params = [];
 
+    // Filter by analyst sections
+    if ($role === 'analyst') {
+        $allowedTypes = [];
+        foreach ($sections as $section) {
+            if (isset($sectionMapping[$section])) {
+                $allowedTypes = array_merge($allowedTypes, $sectionMapping[$section]);
+            }
+        }
+        
+        if (empty($allowedTypes)) {
+            respond([]); // No access to any event types
+        }
+
+        // If a specific type is requested, check if it's allowed
+        if ($type !== null) {
+            if (!in_array($type, $allowedTypes)) {
+                respond(["error" => "Access denied to this event type"], 403);
+            }
+            $conditions[] = "event_type = ?";
+            $params[] = $type;
+        } else {
+            // Otherwise, filter by all allowed types
+            $placeholders = implode(',', array_fill(0, count($allowedTypes), '?'));
+            $conditions[] = "event_type IN ($placeholders)";
+            $params = array_merge($params, $allowedTypes);
+        }
+    } else {
+        // Super Admin or other roles (Viewer already blocked)
+        if ($type !== null) {
+            $conditions[] = "event_type = ?";
+            $params[] = $type;
+        }
+    }
+
     // filter by row id
     if ($id !== null) {
         $conditions[] = "id = ?";
         $params[] = $id;
-    }
-
-    // filter by event type
-    if ($type !== null) {
-        $conditions[] = "event_type = ?";
-        $params[] = $type;
     }
 
     // filter by session
