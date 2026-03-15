@@ -377,97 +377,103 @@ function formatDate(ts) {
    PDF EXPORT
 ========================== */
 window.exportPDF = async function () {
+    const container = document.createElement("div");
+    
+    // Maintain landscape-friendly width
+    container.style.width = "1000px"; 
+    container.style.margin = "0 auto";
+    container.style.background = "white";
+    container.style.fontFamily = "Arial, sans-serif";
 
-const container = document.createElement("div");
-container.style.background = "white";
-container.style.padding = "20px";
-container.style.width = "900px";
-container.style.fontFamily = "Arial";
+    /* Helper with reduced vertical padding and auto-height */
+    const createPage = (titleText) => {
+        const section = document.createElement("div");
+        section.style.padding = "20px 40px"; // Reduced top/bottom padding
+        section.style.height = "auto";       // Remove fixed 750px height
+        section.style.pageBreakAfter = "always"; 
+        section.style.display = "flex";
+        section.style.flexDirection = "column";
+        section.style.alignItems = "center";
 
-/* Title */
+        const header = document.createElement("h2");
+        header.textContent = titleText;
+        header.style.margin = "0 0 15px 0"; // Tighten header margin
+        section.appendChild(header);
+        
+        return section;
+    };
 
-const title = document.createElement("h1");
-title.innerText = "Metrics Dashboard Report";
-container.appendChild(title);
+    /* ===== CHARTS ===== */
+    const chartConfigs = [
+        { obj: eventChart, name: "Event Distribution" },
+        { obj: timeChart, name: "Events Over Time" },
+        { obj: referrerChart, name: "Top Referrers" },
+        { obj: sessionChart, name: "Session Activity" }
+    ];
 
-/* Chart images */
+    chartConfigs.forEach(config => {
+        if (!config.obj) return;
+        
+        const page = createPage(config.name);
+        const img = document.createElement("img");
+        img.src = config.obj.toBase64Image();
+        
+        // Large width for landscape, but allow it to dictate its own height
+        img.style.width = "95%"; 
+        img.style.maxWidth = "950px";
+        img.style.height = "auto";
+        img.style.border = "1px solid #eee";
+        
+        page.appendChild(img);
+        container.appendChild(page);
+    });
 
-const chartIds = [
-"eventChart",
-"timeChart",
-"referrerChart",
-"sessionChart"
-];
+    /* ===== TABLE ===== */
+    const table = document.getElementById("metricsTable");
+    if (table) {
+        const tablePage = createPage("Full Metrics Table Preview");
+        const preview = table.cloneNode(true);
+        
+        const rows = preview.querySelectorAll("tbody tr");
+        rows.forEach((row, i) => { if (i > 15) row.remove(); });
 
-chartIds.forEach(id => {
+        preview.style.width = "100%";
+        preview.style.borderCollapse = "collapse";
+        preview.style.fontSize = "10px";
 
-const canvas = document.getElementById(id);
+        preview.querySelectorAll("th, td").forEach(cell => {
+            cell.style.border = "1px solid #ccc";
+            cell.style.padding = "6px";
+        });
 
-if (!canvas) return;
+        tablePage.appendChild(preview);
+        container.appendChild(tablePage);
+    }
 
-const img = document.createElement("img");
-img.src = canvas.toDataURL("image/png");
-img.style.width = "100%";
-img.style.marginBottom = "25px";
+    document.body.appendChild(container);
+    await new Promise(r => setTimeout(r, 500));
 
-container.appendChild(img);
+    const opt = {
+        margin: 0,
+        filename: "metrics-report-compact.pdf",
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { 
+            scale: 2, 
+            useCORS: true,
+            width: 1050 
+        },
+        jsPDF: { 
+            unit: "in", 
+            format: "letter", 
+            orientation: "landscape" 
+        }
+    };
 
-});
-
-/* Table preview */
-
-const table = document.getElementById("metricsTable");
-
-if (table) {
-
-const label = document.createElement("h2");
-label.innerText = "Table Preview (First 10 Rows)";
-container.appendChild(label);
-
-const newTable = table.cloneNode(true);
-
-const rows = newTable.querySelectorAll("tbody tr");
-
-rows.forEach((row,index)=>{
-if(index > 9) row.remove();
-});
-
-newTable.style.width = "100%";
-newTable.style.borderCollapse = "collapse";
-
-container.appendChild(newTable);
-
-}
-
-/* Add container temporarily */
-
-container.style.position = "fixed";
-container.style.left = "-9999px";
-
-document.body.appendChild(container);
-
-/* Export */
-
-const opt = {
-margin: 0.5,
-filename: "metrics-report.pdf",
-html2canvas: {
-scale: 2,
-useCORS: true
-},
-jsPDF: {
-unit: "in",
-format: "letter",
-orientation: "portrait"
-}
-};
-
-await html2pdf().set(opt).from(container).save();
-
-/* Cleanup */
-
-document.body.removeChild(container);
-
+    try {
+        await html2pdf().set(opt).from(container).save();
+    } finally {
+        document.body.removeChild(container);
+    }
 };
 
 /* ==========================
