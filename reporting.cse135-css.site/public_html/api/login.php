@@ -66,7 +66,7 @@ if ($method === 'GET') {
             "sections" => $_SESSION['sections']
         ]);
     } else {
-        http_response_code(403);
+        http_response_code(401);
         echo json_encode(["authenticated" => false]);
     }
     exit();

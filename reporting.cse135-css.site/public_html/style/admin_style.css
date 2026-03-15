@@ -206,7 +206,7 @@ tr:hover {
     text-transform: uppercase;
 }
 
-.badge-admin { background: #fee2e2; color: #b91c1c; }
+.badge-super-admin { background: #ffedd5; color: #9a3412; }
 .badge-analyst { background: #dcfce7; color: #15803d; }
 .badge-viewer { background: #f3f4f6; color: #374151; }
 
