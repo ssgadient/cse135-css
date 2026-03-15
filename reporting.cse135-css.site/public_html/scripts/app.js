@@ -376,49 +376,97 @@ function formatDate(ts) {
 /* ==========================
    PDF EXPORT
 ========================== */
-window.exportPDF = function () {
+window.exportPDF = async function () {
 
-const dashboard = document.getElementById("dashboardContainer");
+const container = document.createElement("div");
+container.style.background = "white";
+container.style.padding = "20px";
+container.style.width = "900px";
+container.style.fontFamily = "Arial";
 
-/* clone dashboard so we don't modify the real page */
-const clone = dashboard.cloneNode(true);
+/* Title */
 
-/* remove filter controls from export */
-const controls = clone.querySelector(".controls");
-if (controls) controls.remove();
+const title = document.createElement("h1");
+title.innerText = "Metrics Dashboard Report";
+container.appendChild(title);
 
-/* trim table rows to first 20 */
-const rows = clone.querySelectorAll("#metricsTable tbody tr");
+/* Chart images */
 
-rows.forEach((row, index) => {
-  if (index > 19) row.remove();
+const chartIds = [
+"eventChart",
+"timeChart",
+"referrerChart",
+"sessionChart"
+];
+
+chartIds.forEach(id => {
+
+const canvas = document.getElementById(id);
+
+if (!canvas) return;
+
+const img = document.createElement("img");
+img.src = canvas.toDataURL("image/png");
+img.style.width = "100%";
+img.style.marginBottom = "25px";
+
+container.appendChild(img);
+
 });
 
-/* remove scrolling restriction so table renders cleanly */
-const scrollBox = clone.querySelector(".table-scroll");
-if (scrollBox) {
-  scrollBox.style.height = "auto";
-  scrollBox.style.overflow = "visible";
+/* Table preview */
+
+const table = document.getElementById("metricsTable");
+
+if (table) {
+
+const label = document.createElement("h2");
+label.innerText = "Table Preview (First 10 Rows)";
+container.appendChild(label);
+
+const newTable = table.cloneNode(true);
+
+const rows = newTable.querySelectorAll("tbody tr");
+
+rows.forEach((row,index)=>{
+if(index > 9) row.remove();
+});
+
+newTable.style.width = "100%";
+newTable.style.borderCollapse = "collapse";
+
+container.appendChild(newTable);
+
 }
 
-/* create hidden container for rendering */
-const container = document.createElement("div");
+/* Add container temporarily */
+
 container.style.position = "fixed";
 container.style.left = "-9999px";
-container.appendChild(clone);
+
 document.body.appendChild(container);
 
+/* Export */
+
 const opt = {
-  margin: 0.5,
-  filename: "metrics-dashboard.pdf",
-  image: { type: "jpeg", quality: 0.98 },
-  html2canvas: { scale: 2 },
-  jsPDF: { unit: "in", format: "letter", orientation: "portrait" }
+margin: 0.5,
+filename: "metrics-report.pdf",
+html2canvas: {
+scale: 2,
+useCORS: true
+},
+jsPDF: {
+unit: "in",
+format: "letter",
+orientation: "portrait"
+}
 };
 
-html2pdf().set(opt).from(clone).save().then(() => {
-  document.body.removeChild(container);
-});
+await html2pdf().set(opt).from(container).save();
+
+/* Cleanup */
+
+document.body.removeChild(container);
 
 };
 
