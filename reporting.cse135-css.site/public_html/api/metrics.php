@@ -10,13 +10,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 /* =============================
-   AUTHENTICATION CHECK
+   AUTHENTICATION & AUTHORIZATION CHECK
 ============================= */
 session_start();
 
 if (!isset($_SESSION['user_id'])) {
     http_response_code(401);
     echo json_encode(["error" => "Unauthorized access. Please log in."]);
+    exit();
+}
+
+$role = $_SESSION['role'] ?? 'viewer';
+$sections = $_SESSION['sections'] ?? [];
+
+// Viewer cannot access raw metrics directly, only saved reports
+if ($role === 'viewer') {
+    http_response_code(403);
+    echo json_encode(["error" => "Access denied. Viewers can only access saved reports."]);
     exit();
 }
 

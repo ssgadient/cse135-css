@@ -224,19 +224,96 @@ summary {
   flex: 1; 
 }
 /* ==========================
-   DASHBOARD LAYOUT
+   NAVIGATION
 ========================== */
-
-.dashboard-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.nav-btn {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.3);
+    color: white;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 10px;
+    transition: all 0.2s;
 }
 
-.header-actions button {
-  margin-left: 8px;
-  padding: 8px 14px;
-  background: #2563eb;
+.nav-btn:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+.nav-btn.active {
+    background: #2563eb;
+    border-color: #2563eb;
+}
+
+/* ==========================
+   REPORTS GRID
+========================== */
+.reports-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.report-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    padding: 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.report-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* ==========================
+   COMMENTS SECTION
+========================= */
+.comments-section {
+    background: white;
+    border: 1px solid #e5e7eb;
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 20px;
+}
+
+.comments-section h3 {
+    margin-top: 0;
+    border-bottom: 2px solid #f3f4f6;
+    padding-bottom: 10px;
+}
+
+#commentsList > div {
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+#commentsList > div:last-child {
+    border-bottom: none;
+}
+
+/* ==========================
+   ERROR PAGES & CONTINGENCIES
+========================== */
+.error-container {
+    text-align: center;
+    padding: 100px 20px;
+}
+
+.error-container h1 {
+    font-size: 72px;
+    margin: 0;
+    color: #1f2937;
+}
+
+.error-container p {
+    font-size: 24px;
+    color: #6b7280;
 }
 
 /* ==========================

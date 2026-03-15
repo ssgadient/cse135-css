@@ -1,4 +1,5 @@
 const METRICS_API_BASE = "/api/metrics";
+const REPORTS_API = "/api/reports.php";
 const LOGIN_API = "/api/login";
 const LOGOUT_API = "/api/logout";
 const ADMIN_API = "/api/admin/manage_users";
@@ -7,23 +8,231 @@ let eventChart = null;
 let timeChart = null;
 let referrerChart = null;
 let sessionChart = null;
+let reportChart = null;
+
+let currentUser = null;
+let currentReportId = null;
 
 /* ==========================
    AUTHENTICATION LOGIC
 ========================== */
 
-function toggleView(isAuthenticated) {
+function toggleView(isAuthenticated, user = null) {
     const loginContainer = document.getElementById('loginContainer');
     const dashboardContainer = document.getElementById('dashboardContainer');
     
-    if (isAuthenticated) {
+    if (isAuthenticated && user) {
+        currentUser = user;
         loginContainer.style.display = 'none';
         dashboardContainer.style.display = 'block';
+        applyRolePermissions(user);
     } else {
         loginContainer.style.display = 'block';
         dashboardContainer.style.display = 'none';
     }
 }
+
+function applyRolePermissions(user) {
+    const isAdmin = user.role === 'super_admin';
+    const isAnalyst = user.role === 'analyst';
+    const isViewer = user.role === 'viewer';
+
+    document.getElementById('adminBtn').style.display = isAdmin ? 'inline-block' : 'none';
+    
+    // Viewer cannot see Metrics raw view, only Reports
+    if (isViewer) {
+        showView('reports');
+        const metricsNavBtn = document.querySelector('button[onclick="showView(\'metrics\')"]');
+        if (metricsNavBtn) metricsNavBtn.style.display = 'none';
+    } else {
+        showView('metrics');
+    }
+
+    // Hide metric modification buttons for viewers
+    const modificationBtns = ['addMetricBtn', 'updateMetricBtn', 'deleteMetricBtn', 'saveReportBtn'];
+    modificationBtns.forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) btn.style.display = isViewer ? 'none' : 'inline-block';
+    });
+
+    // Hide comment form for viewers
+    const commentForm = document.getElementById('addCommentForm');
+    if (commentForm) commentForm.style.display = isViewer ? 'none' : 'block';
+}
+
+function showView(viewName) {
+    const metricsView = document.getElementById('metricsView');
+    const reportsView = document.getElementById('reportsView');
+    
+    if (viewName === 'metrics') {
+        metricsView.style.display = 'block';
+        reportsView.style.display = 'none';
+        loadMetrics();
+    } else {
+        metricsView.style.display = 'none';
+        reportsView.style.display = 'block';
+        loadReports();
+    }
+}
+
+async function loadReports() {
+    try {
+        const res = await fetch(REPORTS_API);
+        const reports = await res.json();
+        renderReportsList(reports);
+    } catch (err) {
+        console.error("Failed to load reports:", err);
+    }
+}
+
+function renderReportsList(reports) {
+    const list = document.getElementById('reportsList');
+    list.innerHTML = "";
+    
+    if (reports.length === 0) {
+        list.innerHTML = "<p>No reports available.</p>";
+        return;
+    }
+
+    reports.forEach(report => {
+        const card = document.createElement('div');
+        card.className = 'chart-card';
+        card.style.cursor = 'pointer';
+        card.style.padding = '15px';
+        card.innerHTML = `
+            <h3>${report.title}</h3>
+            <p>Category: ${report.category}</p>
+            <p>Created by: ${report.creator_name}</p>
+            <p>Date: ${new Date(report.created_at).toLocaleDateString()}</p>
+        `;
+        card.onclick = () => loadReportDetails(report.id);
+        list.appendChild(card);
+    });
+}
+
+async function loadReportDetails(id) {
+    currentReportId = id;
+    try {
+        const res = await fetch(`${REPORTS_API}?id=${id}`);
+        const report = await res.json();
+        
+        document.getElementById('selectedReport').style.display = 'block';
+        document.getElementById('reportTitle').innerText = report.title;
+        
+        // Load data for the report based on its config
+        const config = JSON.parse(report.config);
+        const params = new URLSearchParams(config);
+        const dataRes = await fetch(`${METRICS_API_BASE}?${params.toString()}`);
+        const data = await dataRes.json();
+        
+        renderReportChart(data);
+        renderComments(report.comments);
+        
+        // Scroll to the report details
+        document.getElementById('selectedReport').scrollIntoView({ behavior: 'smooth' });
+    } catch (err) {
+        console.error("Failed to load report details:", err);
+    }
+}
+
+function renderReportChart(data) {
+    const counts = {};
+    data.forEach(row => {
+        const type = row.event_type || "unknown";
+        counts[type] = (counts[type] || 0) + 1;
+    });
+
+    const ctx = document.getElementById("reportChart");
+    if (reportChart) reportChart.destroy();
+
+    reportChart = new Chart(ctx, {
+        type: "bar",
+        data: {
+            labels: Object.keys(counts),
+            datasets: [{
+                label: "Event Distribution",
+                data: Object.values(counts),
+                backgroundColor: '#8b5cf6'
+            }]
+        }
+    });
+}
+
+function renderComments(comments) {
+    const list = document.getElementById('commentsList');
+    list.innerHTML = "";
+    
+    comments.forEach(c => {
+        const div = document.createElement('div');
+        div.style.padding = '10px';
+        div.style.borderBottom = '1px solid #eee';
+        div.innerHTML = `
+            <strong>${c.username}</strong> <small>${new Date(c.created_at).toLocaleString()}</small>
+            <p>${c.comment}</p>
+        `;
+        list.appendChild(div);
+    });
+}
+
+async function submitComment() {
+    const text = document.getElementById('commentText').value;
+    if (!text || !currentReportId) return;
+
+    try {
+        const res = await fetch(`${REPORTS_API}?action=add_comment`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ report_id: currentReportId, comment: text })
+        });
+
+        if (res.ok) {
+            document.getElementById('commentText').value = "";
+            loadReportDetails(currentReportId);
+        }
+    } catch (err) {
+        console.error("Failed to submit comment:", err);
+    }
+}
+
+function openReportModal() {
+    document.getElementById('reportModal').style.display = 'flex';
+}
+
+function closeReportModal() {
+    document.getElementById('reportModal').style.display = 'none';
+    document.getElementById('saveReportForm').reset();
+}
+
+document.getElementById('saveReportForm').onsubmit = async (e) => {
+    e.preventDefault();
+    const title = document.getElementById('report_title').value;
+    const category = document.getElementById('report_category').value;
+    
+    // Use current filters as config
+    const config = {
+        type: document.getElementById("typeFilter").value,
+        session: document.getElementById("sessionFilter").value
+    };
+
+    try {
+        const res = await fetch(`${REPORTS_API}?action=create_report`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, category, config })
+        });
+
+        if (res.ok) {
+            alert("Report saved successfully!");
+            closeReportModal();
+            showView('reports');
+        } else {
+            const err = await res.json();
+            alert("Error: " + err.error);
+        }
+    } catch (err) {
+        console.error("Failed to save report:", err);
+    }
+};
 
 function showLogin() {
     document.getElementById('loginContainer').style.display = 'block';
@@ -41,9 +250,9 @@ function showLogin() {
         });
 
         if (res.ok) {
-            toggleView(true);
-            loadMetrics();
-            setupLogoutHandler(); // Setup logout handler
+            const user = await res.json();
+            toggleView(true, user);
+            setupLogoutHandler();
         } else {
             document.getElementById('loginError').innerText = "Invalid username or password";
         }
@@ -55,8 +264,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         const checkRes = await fetch(LOGIN_API, { method: 'GET' }); // Check session
         if (checkRes.ok) {
-            toggleView(true);
-            loadMetrics();
+            const user = await checkRes.json();
+            toggleView(true, user);
             setupLogoutHandler(); // Setup logout handler
         } else {
             toggleView(false);

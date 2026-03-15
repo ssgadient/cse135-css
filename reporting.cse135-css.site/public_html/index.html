@@ -10,6 +10,13 @@
 
 <body>
 
+<noscript>
+    <div style="padding: 20px; text-align: center; background: #fee2e2; color: #b91c1c;">
+        <h1>JavaScript Required</h1>
+        <p>This reporting dashboard requires JavaScript to function. Please enable it in your browser settings.</p>
+    </div>
+</noscript>
+
 <div id="loginContainer" style="display:none;padding:50px;text-align:center;">
 
 <section class="controls" style="max-width:400px;margin:auto;display:block;">
@@ -30,79 +37,132 @@
 <main id="dashboardContainer" style="display:none;">
 
 <header style="display:flex;justify-content:space-between;align-items:center;padding:0 20px;">
-<h1>Metrics Dashboard</h1>
+<div style="display:flex; align-items:center;">
+    <h1>Metrics Dashboard</h1>
+    <nav style="margin-left: 30px;">
+        <button onclick="showView('metrics')" class="nav-btn">Metrics</button>
+        <button onclick="showView('reports')" class="nav-btn">Saved Reports</button>
+    </nav>
+</div>
 
 <div>
 <button class="export-btn" onclick="exportPDF()" style="background-color: #059669; color: white; border: none; border-radius: 4px; padding: 8px 15px; cursor: pointer; margin-left: 10px;">Export PDF</button>
-<button onclick="window.location.href='/api/admin/'" style="background-color: #d26410; color: white; border: none; border-radius: 4px; padding: 8px 15px; cursor: pointer; margin-left: 10px;">Admin (User Mgmt)</button>
+<button id="adminBtn" onclick="window.location.href='/api/admin/'" style="display:none; background-color: #d26410; color: white; border: none; border-radius: 4px; padding: 8px 15px; cursor: pointer; margin-left: 10px;">Admin (User Mgmt)</button>
 <button id="logoutBtn" style="background-color: #6c757d; color: white; border: none; border-radius: 4px; padding: 8px 15px; cursor: pointer; margin-left: 10px;">Logout</button>
 </div>
 
 </header>
 
-<section class="controls">
+<div id="metricsView">
+    <section class="controls">
+    <input id="idFilter" placeholder="Filter by ID">
+    <input id="typeFilter" placeholder="Filter by event type">
+    <input id="sessionFilter" placeholder="Filter by session id">
 
-<input id="idFilter" placeholder="Filter by ID">
-<input id="typeFilter" placeholder="Filter by event type">
-<input id="sessionFilter" placeholder="Filter by session id">
+    <button onclick="loadMetrics()" style="background-color: #2563eb;">Load Metrics</button>
+    <button id="addMetricBtn" onclick="openModal('create')" style="background-color: #28a745;">+ Add Entry</button>
+    <button id="updateMetricBtn" onclick="openModal('update')" style="background-color: #ffed29;">Update Entry</button>
+    <button id="deleteMetricBtn" onclick="openModal('delete')" style="background-color: #d30000;">- Delete Entry</button>
+    <button id="saveReportBtn" onclick="openReportModal()" style="background-color: #8b5cf6; color: white;">Save as Report</button>
+    </section>
 
-<button onclick="loadMetrics()" style="background-color: #2563eb;">Load Metrics</button>
-<button onclick="openModal('create')" style="background-color: #28a745;">+ Add Entry</button>
-<button onclick="openModal('update')" style="background-color: #ffed29;">Update Entry</button>
-<button onclick="openModal('delete')" style="background-color: #d30000;">- Delete Entry</button>
+    <section class="charts-grid">
+    <div class="chart-card">
+    <h2>Event Type Distribution</h2>
+    <canvas id="eventChart"></canvas>
+    </div>
 
-</section>
+    <div class="chart-card">
+    <h2>Events Over Time</h2>
+    <canvas id="timeChart"></canvas>
+    </div>
 
-<section class="charts-grid">
+    <div class="chart-card">
+    <h2>Top Referrers</h2>
+    <canvas id="referrerChart"></canvas>
+    </div>
 
-<div class="chart-card">
-<h2>Event Type Distribution</h2>
-<canvas id="eventChart"></canvas>
+    <div class="chart-card">
+    <h2>Events per Session</h2>
+    <canvas id="sessionChart"></canvas>
+    </div>
+    </section>
+
+    <section class="table-container">
+    <div class="table-scroll">
+    <table id="metricsTable">
+    <thead>
+    <tr>
+    <th>ID</th>
+    <th>Session</th>
+    <th>Event</th>
+    <th>Page</th>
+    <th>Title</th>
+    <th>Referrer</th>
+    <th>Client Time</th>
+    <th>Server Time</th>
+    <th>IP</th>
+    <th>Data</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+    </table>
+    </div>
+    </section>
 </div>
 
-<div class="chart-card">
-<h2>Events Over Time</h2>
-<canvas id="timeChart"></canvas>
+<div id="reportsView" style="display:none;">
+    <section class="controls">
+        <h2>Saved Reports</h2>
+    </section>
+    <div id="reportsList" class="reports-grid">
+        <!-- Reports will be populated here -->
+    </div>
+
+    <div id="selectedReport" style="display:none; margin-top: 30px;">
+        <hr>
+        <h2 id="reportTitle">Report Title</h2>
+        <div class="charts-grid">
+             <div class="chart-card">
+                <canvas id="reportChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="comments-section">
+            <h3>Analyst Comments</h3>
+            <div id="commentsList"></div>
+            <div id="addCommentForm" style="margin-top: 20px;">
+                <textarea id="commentText" placeholder="Write an analysis of this report..." rows="4" style="width: 100%; margin-bottom: 10px;"></textarea>
+                <button onclick="submitComment()" style="background-color: #2563eb; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">Add Comment</button>
+            </div>
+        </div>
+    </div>
 </div>
-
-<div class="chart-card">
-<h2>Top Referrers</h2>
-<canvas id="referrerChart"></canvas>
-</div>
-
-<div class="chart-card">
-<h2>Events per Session</h2>
-<canvas id="sessionChart"></canvas>
-</div>
-
-</section>
-
-<section class="table-container">
-<div class="table-scroll">
-<table id="metricsTable">
-
-<thead>
-<tr>
-<th>ID</th>
-<th>Session</th>
-<th>Event</th>
-<th>Page</th>
-<th>Title</th>
-<th>Referrer</th>
-<th>Client Time</th>
-<th>Server Time</th>
-<th>IP</th>
-<th>Data</th>
-</tr>
-</thead>
-
-<tbody></tbody>
-
-</table>
-</div>
-</section>
 
 </main>
+
+  <!-- Report Modal -->
+  <div id="reportModal" class="modal-overlay">
+    <div class="modal-content">
+      <h3>Save Current View as Report</h3>
+      <form id="saveReportForm">
+        <label for="report_title">Report Title</label>
+        <input type="text" id="report_title" required placeholder="e.g., Performance Q1 2026">
+        
+        <label for="report_category">Category</label>
+        <select id="report_category" required>
+            <option value="performance">Performance</option>
+            <option value="behavioral">Behavioral</option>
+            <option value="errors">Errors</option>
+        </select>
+        
+        <div class="modal-actions">
+          <button type="submit" class="btn-submit" style="background-color: #8b5cf6; color: white;">Save Report</button>
+          <button type="button" class="btn-cancel" onclick="closeReportModal()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <div id="metricModal" class="modal-overlay">
     <div class="modal-content">

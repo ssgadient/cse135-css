@@ -29,7 +29,7 @@ if ($method === 'POST') {
     $username = $data['username'] ?? '';
     $password = $data['password'] ?? '';
 
-    $stmt = $pdo->prepare("SELECT id, password_hash FROM users WHERE username = ?");
+    $stmt = $pdo->prepare("SELECT id, password_hash, role, sections FROM users WHERE username = ?");
     $stmt->execute([$username]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -39,8 +39,15 @@ if ($method === 'POST') {
         
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['username'] = $username;
+        $_SESSION['role'] = $user['role'];
+        $_SESSION['sections'] = json_decode($user['sections'] ?? '[]', true);
         
-        echo json_encode(["status" => "success", "message" => "Logged in successfully"]);
+        echo json_encode([
+            "status" => "success", 
+            "message" => "Logged in successfully",
+            "role" => $_SESSION['role'],
+            "sections" => $_SESSION['sections']
+        ]);
         http_response_code(200);
     } else {
         http_response_code(401);
@@ -52,7 +59,12 @@ if ($method === 'POST') {
 // Check Current Auth Status (Useful for your SPA frontend)
 if ($method === 'GET') {
     if (isset($_SESSION['user_id'])) {
-        echo json_encode(["authenticated" => true, "username" => $_SESSION['username']]);
+        echo json_encode([
+            "authenticated" => true, 
+            "username" => $_SESSION['username'],
+            "role" => $_SESSION['role'],
+            "sections" => $_SESSION['sections']
+        ]);
     } else {
         http_response_code(403);
         echo json_encode(["authenticated" => false]);
