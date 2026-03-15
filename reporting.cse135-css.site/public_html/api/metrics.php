@@ -23,11 +23,11 @@ if (!isset($_SESSION['user_id'])) {
 $role = $_SESSION['role'] ?? 'viewer';
 $sections = $_SESSION['sections'] ?? [];
 
-// Define mappings of sections to event types
+// Define mappings of sections to event types based on collector.js
 $sectionMapping = [
-    'performance' => ['load', 'fcp', 'lcp', 'fid', 'cls', 'ttfb'],
-    'behavioral'  => ['click', 'scroll', 'input', 'hover', 'submit'],
-    'errors'      => ['js-error', '404-error', 'api-error']
+    'performance' => ['performance', 'static', 'enter', 'exit', 'load', 'fcp', 'lcp', 'fid', 'cls', 'ttfb'],
+    'behavioral'  => ['click', 'scroll', 'mousemove', 'keydown', 'keyup', 'idle_start', 'idle_end', 'input', 'hover', 'submit'],
+    'errors'      => ['js-error', 'promise-rejection', 'resource-error', '404-error', 'api-error']
 ];
 
 // Viewer cannot access raw metrics directly, only saved reports
