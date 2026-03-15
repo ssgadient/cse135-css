@@ -1,0 +1,106 @@
+/* ==========================
+   ADMIN PANEL STYLES
+========================== */
+
+.admin-container {
+    display: flex;
+    gap: 30px;
+    padding: 20px;
+    max-width: 1200px;
+    margin: auto;
+}
+
+.user-list {
+    flex: 2;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+}
+
+.user-form {
+    flex: 1;
+    position: sticky;
+    top: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+/* ==========================
+   ADMIN CARD (MIGRATED)
+========================== */
+
+.admin-card {
+    display: flex;
+    flex-direction: column;
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 30px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.admin-card form {
+    width: 100%;
+}
+
+.admin-card input, 
+.admin-card select,
+.admin-card button {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    box-sizing: border-box;
+    display: block;
+}
+
+.admin-card button {
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    text-align: center;
+    cursor: pointer;
+    background: #2563eb;
+    color: white;
+    border: none;
+}
+
+.admin-card button:hover {
+    background: #1d4ed8;
+}
+
+/* ==========================
+   BADGES & BUTTONS
+========================== */
+
+.badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.badge-admin { background: #fee2e2; color: #b91c1c; }
+.badge-analyst { background: #dcfce7; color: #15803d; }
+.badge-viewer { background: #f3f4f6; color: #374151; }
+
+.btn-edit { background: #2563eb; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+.btn-delete { background: #dc2626; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-left: 5px; }
+
+#analystSections {
+    background: #f9fafb;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #e5e7eb;
+}
