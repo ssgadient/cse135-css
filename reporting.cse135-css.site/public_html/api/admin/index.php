@@ -1,3 +1,10 @@
+<?php
+session_start();
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'super_admin') {
+    header("Location: /");
+    exit();
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -45,11 +52,13 @@
                 <option value="super_admin">Super Admin</option>
             </select>
 
-            <div id="analystSections" style="display:none; background: #f9fafb; padding: 15px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #e5e7eb;">
-                <p style="margin-top: 0; font-weight: bold;">Analyst Access Sections:</p>
-                <label style="display: block; margin: 5px 0;"><input type="checkbox" name="section" value="performance"> Performance</label>
-                <label style="display: block; margin: 5px 0;"><input type="checkbox" name="section" value="behavioral"> Behavioral</label>
-                <label style="display: block; margin: 5px 0;"><input type="checkbox" name="section" value="errors"> Errors</label>
+            <div id="analystSections" style="display:none;">
+                <p>Analyst Access Sections:</p>
+                <div class="section-checkbox-group">
+                    <label><input type="checkbox" name="section" value="performance"> Performance</label>
+                    <label><input type="checkbox" name="section" value="behavioral"> Behavioral</label>
+                    <label><input type="checkbox" name="section" value="errors"> Errors</label>
+                </div>
             </div>
 
             <div style="display: flex; gap: 10px;">

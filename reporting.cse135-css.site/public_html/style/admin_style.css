@@ -2,19 +2,24 @@
    ADMIN PANEL STYLES
 ========================== */
 
+body {
+    background: #f3f4f6; /* Lighter gray for better contrast with cards */
+}
+
 .admin-container {
     display: flex;
     gap: 30px;
-    padding: 20px;
-    max-width: 1200px;
+    padding: 40px 20px;
+    max-width: 1400px;
     margin: auto;
 }
 
 .user-list {
     flex: 2;
     background: white;
-    padding: 20px;
+    padding: 25px;
     border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     border: 1px solid #e5e7eb;
 }
 
@@ -22,85 +27,191 @@
     flex: 1;
     position: sticky;
     top: 20px;
+    align-self: flex-start;
 }
+
+/* ==========================
+   TABLE STYLES
+========================== */
 
 table {
     width: 100%;
     border-collapse: collapse;
+    margin-top: 15px;
 }
 
-th, td {
-    padding: 12px;
+th {
+    background: #f9fafb;
+    color: #4b5563;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    padding: 12px 15px;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+td {
+    padding: 15px;
     text-align: left;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid #f3f4f6;
+    color: #1f2937;
+    font-size: 14px;
+}
+
+tr:hover {
+    background-color: #f9fafb;
 }
 
 /* ==========================
-   ADMIN CARD (MIGRATED)
+   ENHANCED USER CARD
 ========================== */
 
 .admin-card {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border: 1px solid #e5e7eb;
+}
+
+.admin-card h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 1.25rem;
+    color: #111827;
+    border-bottom: 1px solid #f3f4f6;
+    padding-bottom: 15px;
+}
+
+.admin-card label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 6px;
+    margin-top: 15px;
+}
+
+.admin-card input[type="text"], 
+.admin-card input[type="password"], 
+.admin-card select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    background-color: #fff;
+    box-sizing: border-box;
+}
+
+.admin-card input:focus, 
+.admin-card select:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* ==========================
+   ANALYST SECTIONS BOX
+========================== */
+
+#analystSections {
+    background: #f9fafb;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 15px;
+    border: 1px solid #e5e7eb;
+}
+
+#analystSections p {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 12px;
+    text-transform: uppercase;
+    color: #6b7280;
+    letter-spacing: 0.025em;
+}
+
+.section-checkbox-group {
     display: flex;
     flex-direction: column;
-    max-width: 400px;
-    margin: 50px auto;
-    padding: 30px;
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    gap: 8px;
 }
 
-.admin-card form {
-    width: 100%;
+.section-checkbox-group label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    font-weight: 400;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 6px 8px;
+    border-radius: 4px;
+    transition: background 0.2s;
 }
 
-.admin-card input, 
-.admin-card select,
+.section-checkbox-group label:hover {
+    background: #f3f4f6;
+}
+
+.section-checkbox-group input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+/* ==========================
+   BUTTONS & BADGES
+========================== */
+
 .admin-card button {
     width: 100%;
     padding: 12px;
-    margin: 10px 0;
-    box-sizing: border-box;
-    display: block;
+    margin-top: 25px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
-.admin-card button {
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    text-align: center;
-    cursor: pointer;
+#submitBtn {
     background: #2563eb;
     color: white;
     border: none;
 }
 
-.admin-card button:hover {
+#submitBtn:hover {
     background: #1d4ed8;
 }
 
-/* ==========================
-   BADGES & BUTTONS
-========================== */
+#cancelBtn {
+    background: #fff;
+    color: #374151;
+    border: 1px solid #d1d5db;
+    margin-top: 10px;
+}
+
+#cancelBtn:hover {
+    background: #f9fafb;
+}
 
 .badge {
     padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: bold;
+    border-radius: 9999px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
 }
 
 .badge-admin { background: #fee2e2; color: #b91c1c; }
 .badge-analyst { background: #dcfce7; color: #15803d; }
 .badge-viewer { background: #f3f4f6; color: #374151; }
 
-.btn-edit { background: #2563eb; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
-.btn-delete { background: #dc2626; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-left: 5px; }
+.btn-edit { background: #eff6ff; color: #2563eb; border: 1px solid #dbeafe; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600; }
+.btn-edit:hover { background: #dbeafe; }
 
-#analystSections {
-    background: #f9fafb;
-    padding: 15px;
-    border-radius: 8px;
-    margin-bottom: 10px;
-    border: 1px solid #e5e7eb;
-}
+.btn-delete { background: #fef2f2; color: #dc2626; border: 1px solid #fee2e2; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600; margin-left: 5px; }
+.btn-delete:hover { background: #fee2e2; }

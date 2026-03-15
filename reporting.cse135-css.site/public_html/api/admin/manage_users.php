@@ -3,7 +3,12 @@
 session_start();
 header("Content-Type: application/json");
 
-// Protected by .htaccess Basic Auth in the /api/admin directory
+// Security Check: Only Super Admins can access this API
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'super_admin') {
+    http_response_code(403);
+    echo json_encode(["error" => "Access denied. Super Admin privileges required."]);
+    exit();
+}
 
 $configPath = __DIR__ . '/../../../db_config.php';
 if (!file_exists($configPath)) {
