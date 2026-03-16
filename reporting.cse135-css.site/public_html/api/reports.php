@@ -60,6 +60,10 @@ try {
                 $mParams[] = $sessionFilter;
             }
 
+            // STATIC SNAPSHOT: Only fetch data that existed when the report was created
+            $mConds[] = "server_timestamp <= ?";
+            $mParams[] = $report['created_at'];
+
             // If it's a category-wide report with no specific filters, we filter by the category's mapped types
             // This ensures the report only shows what it's supposed to
             if (!$typeFilter) {
@@ -125,7 +129,7 @@ try {
             $stmt->execute([$data['title'], $data['category'], json_encode($data['config']), $user_id]);
             echo json_encode(["status" => "success", "id" => $pdo->lastInsertId()]);
         } 
-        elseif ($action === 'add_comment') {
+        else if ($action === 'add_comment') {
             $stmt = $pdo->prepare("INSERT INTO analyst_comments (report_id, user_id, comment) VALUES (?, ?, ?)");
             $stmt->execute([$data['report_id'], $user_id, $data['comment']]);
             echo json_encode(["status" => "success", "id" => $pdo->lastInsertId()]);

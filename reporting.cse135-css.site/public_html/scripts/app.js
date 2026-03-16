@@ -8,7 +8,12 @@ let eventChart = null;
 let timeChart = null;
 let referrerChart = null;
 let sessionChart = null;
-let reportChart = null;
+
+// Report specific charts
+let reportEventChart = null;
+let reportTimeChart = null;
+let reportReferrerChart = null;
+let reportSessionChart = null;
 
 let currentUser = null;
 let currentReportId = null;
@@ -124,8 +129,8 @@ async function loadReportDetails(id) {
         document.getElementById('selectedReport').style.display = 'block';
         document.getElementById('reportTitle').innerText = report.title;
         
-        // Data is now provided directly by reports.php
-        renderReportChart(report.data);
+        // Render all four charts using the bundled data
+        renderReportCharts(report.data);
         renderComments(report.comments);
         
         // Scroll to the report details
@@ -135,25 +140,65 @@ async function loadReportDetails(id) {
     }
 }
 
-function renderReportChart(data) {
-    const counts = {};
-    data.forEach(row => {
-        const type = row.event_type || "unknown";
-        counts[type] = (counts[type] || 0) + 1;
-    });
-
-    const ctx = document.getElementById("reportChart");
-    if (reportChart) reportChart.destroy();
-
-    reportChart = new Chart(ctx, {
+function renderReportCharts(data) {
+    // 1. Event Type Distribution
+    const typeCounts = {};
+    data.forEach(row => { typeCounts[row.event_type || "unknown"] = (typeCounts[row.event_type] || 0) + 1; });
+    
+    if (reportEventChart) reportEventChart.destroy();
+    reportEventChart = new Chart(document.getElementById("reportEventChart"), {
         type: "bar",
         data: {
-            labels: Object.keys(counts),
-            datasets: [{
-                label: "Event Distribution",
-                data: Object.values(counts),
-                backgroundColor: '#8b5cf6'
-            }]
+            labels: Object.keys(typeCounts),
+            datasets: [{ label: "Event Count", data: Object.values(typeCounts), backgroundColor: '#8b5cf6' }]
+        }
+    });
+
+    // 2. Events Over Time
+    const timeCounts = {};
+    data.forEach(row => {
+        const time = new Date(row.server_timestamp).toLocaleTimeString();
+        timeCounts[time] = (timeCounts[time] || 0) + 1;
+    });
+    
+    if (reportTimeChart) reportTimeChart.destroy();
+    reportTimeChart = new Chart(document.getElementById("reportTimeChart"), {
+        type: "line",
+        data: {
+            labels: Object.keys(timeCounts),
+            datasets: [{ label: "Events Over Time", data: Object.values(timeCounts), borderColor: '#8b5cf6', fill: false }]
+        }
+    });
+
+    // 3. Top Referrers
+    const refCounts = {};
+    data.forEach(row => {
+        const ref = row.referrer || "Direct";
+        refCounts[ref] = (refCounts[ref] || 0) + 1;
+    });
+    
+    if (reportReferrerChart) reportReferrerChart.destroy();
+    reportReferrerChart = new Chart(document.getElementById("reportReferrerChart"), {
+        type: "pie",
+        data: {
+            labels: Object.keys(refCounts),
+            datasets: [{ data: Object.values(refCounts), backgroundColor: ['#8b5cf6', '#a78bfa', '#c4b5fd', '#ddd6fe'] }]
+        }
+    });
+
+    // 4. Events per Session
+    const sessionCounts = {};
+    data.forEach(row => {
+        const session = row.session_id || "unknown";
+        sessionCounts[session] = (sessionCounts[session] || 0) + 1;
+    });
+    
+    if (reportSessionChart) reportSessionChart.destroy();
+    reportSessionChart = new Chart(document.getElementById("reportSessionChart"), {
+        type: "bar",
+        data: {
+            labels: Object.keys(sessionCounts).slice(0, 10),
+            datasets: [{ label: "Events per Session", data: Object.values(sessionCounts).slice(0, 10), backgroundColor: '#8b5cf6' }]
         }
     });
 }
