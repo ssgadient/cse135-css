@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Saved Reports</title>
+  <link rel="stylesheet" href="style/index.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+
+<header style="display:flex;justify-content:space-between;align-items:center;padding:0 20px;">
+    <div style="display:flex; align-items:center;">
+        <h1>Metrics Dashboard</h1>
+        <nav style="margin-left: 30px;">
+            <a href="metrics.html" class="nav-btn" id="metricsNav">Metrics</a>
+            <a href="reports.html" class="nav-btn active">Saved Reports</a>
+        </nav>
+    </div>
+    <div>
+        <button class="export-btn" onclick="exportPDF()" style="background-color: #059669; color: white; border: none; border-radius: 4px; padding: 8px 15px; cursor: pointer; margin-left: 10px;">Export PDF</button>
+        <button id="adminBtn" onclick="window.location.href='/api/admin/'" style="display:none; background-color: #d26410; color: white; border: none; border-radius: 4px; padding: 8px 15px; cursor: pointer; margin-left: 10px;">Admin (User Mgmt)</button>
+        <button id="logoutBtn" style="background-color: #6c757d; color: white; border: none; border-radius: 4px; padding: 8px 15px; cursor: pointer; margin-left: 10px;">Logout</button>
+    </div>
+</header>
+
+<main id="dashboardContainer">
+    <section class="controls">
+        <h2>Saved Reports</h2>
+    </section>
+    <div id="reportsList" class="reports-grid">
+        <!-- Reports will be populated here -->
+    </div>
+
+    <div id="selectedReport" style="display:none; margin-top: 30px;">
+        <hr>
+        <h2 id="reportTitle">Report Title</h2>
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h3>Event Type Distribution</h3>
+                <canvas id="reportEventChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>Events Over Time</h3>
+                <canvas id="reportTimeChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>Top Referrers</h3>
+                <canvas id="reportReferrerChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3>Events per Session</h3>
+                <canvas id="reportSessionChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="comments-section">
+            <h3>Analyst Comments</h3>
+            <div id="commentsList"></div>
+            <div id="addCommentForm" style="margin-top: 20px;">
+                <textarea id="commentText" placeholder="Write an analysis of this report..." rows="4" style="width: 100%; margin-bottom: 10px;"></textarea>
+                <button onclick="submitComment()" style="background-color: #2563eb; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">Add Comment</button>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="scripts/shared.js"></script>
+<script src="scripts/reports.js"></script>
+
+</body>
+</html>

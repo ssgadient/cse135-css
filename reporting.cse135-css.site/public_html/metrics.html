@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Metrics Dashboard - live</title>
+  <link rel="stylesheet" href="style/index.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+
+<header style="display:flex;justify-content:space-between;align-items:center;padding:0 20px;">
+    <div style="display:flex; align-items:center;">
+        <h1>Metrics Dashboard</h1>
+        <nav style="margin-left: 30px;">
+            <a href="metrics.html" class="nav-btn active">Metrics</a>
+            <a href="reports.html" class="nav-btn">Saved Reports</a>
+        </nav>
+    </div>
+    <div>
+        <button class="export-btn" onclick="exportPDF()" style="background-color: #059669; color: white; border: none; border-radius: 4px; padding: 8px 15px; cursor: pointer; margin-left: 10px;">Export PDF</button>
+        <button id="adminBtn" onclick="window.location.href='/api/admin/'" style="display:none; background-color: #d26410; color: white; border: none; border-radius: 4px; padding: 8px 15px; cursor: pointer; margin-left: 10px;">Admin (User Mgmt)</button>
+        <button id="logoutBtn" style="background-color: #6c757d; color: white; border: none; border-radius: 4px; padding: 8px 15px; cursor: pointer; margin-left: 10px;">Logout</button>
+    </div>
+</header>
+
+<main id="dashboardContainer">
+    <section class="controls">
+        <input id="idFilter" placeholder="Filter by ID">
+        <input id="typeFilter" placeholder="Filter by event type">
+        <input id="sessionFilter" placeholder="Filter by session id">
+
+        <button onclick="loadMetrics()" style="background-color: #2563eb;">Filter Metrics</button>
+        <button id="addMetricBtn" onclick="openModal('create')" style="background-color: #28a745;">+ Add Entry</button>
+        <button id="updateMetricBtn" onclick="openModal('update')" style="background-color: #ffed29;">Update Entry</button>
+        <button id="deleteMetricBtn" onclick="openModal('delete')" style="background-color: #d30000;">- Delete Entry</button>
+        <button id="saveReportBtn" onclick="openReportModal()" style="background-color: #8b5cf6; color: white;">Save as Report</button>
+    </section>
+
+    <section class="charts-grid">
+        <div class="chart-card">
+            <h2>Event Type Distribution</h2>
+            <canvas id="eventChart"></canvas>
+        </div>
+        <div class="chart-card">
+            <h2>Events Over Time</h2>
+            <canvas id="timeChart"></canvas>
+        </div>
+        <div class="chart-card">
+            <h2>Top Referrers</h2>
+            <canvas id="referrerChart"></canvas>
+        </div>
+        <div class="chart-card">
+            <h2>Events per Session</h2>
+            <canvas id="sessionChart"></canvas>
+        </div>
+    </section>
+
+    <section class="table-container">
+        <div class="table-scroll">
+            <table id="metricsTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Session</th>
+                        <th>Event</th>
+                        <th>Page</th>
+                        <th>Title</th>
+                        <th>Referrer</th>
+                        <th>Client Time</th>
+                        <th>Server Time</th>
+                        <th>IP</th>
+                        <th>Data</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </section>
+</main>
+
+<!-- Report Modal -->
+<div id="reportModal" class="modal-overlay">
+    <div class="modal-content">
+        <h3>Save Current View as Report</h3>
+        <form id="saveReportForm">
+            <label for="report_title">Report Title</label>
+            <input type="text" id="report_title" required placeholder="e.g., Performance Q1 2026">
+            <div class="modal-actions">
+                <button type="submit" class="btn-submit" style="background-color: #8b5cf6; color: white;">Save Report</button>
+                <button type="button" class="btn-cancel" onclick="closeReportModal()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Metric Modal -->
+<div id="metricModal" class="modal-overlay">
+    <div class="modal-content">
+        <h3>Manual Metric Entry</h3>
+        <form id="manualForm">
+            <label for="m_id" id="m_id_label">ID</label>
+            <input type="text" id="m_id" placeholder="ID">
+            <label for="m_session" id="m_session_label">Session ID</label>
+            <input type="text" id="m_session" placeholder="e.g. wcp64u2y...">
+            <label for="m_type" id="m_type_label">Event Type</label>
+            <input type="text" id="m_type" placeholder="e.g. click or js-error">
+            <label for="m_url" id="m_url_label">Page URL</label>
+            <input type="text" id="m_url" placeholder="https://...">
+            <label for="m_data" id="m_data_label">Event Data (JSON)</label>
+            <textarea id="m_data" placeholder='{"x": 10, "y": 20}' rows="4"></textarea>
+            <div class="modal-actions">
+                <button type="submit" class="btn-submit" name="create">Create Entry</button>
+                <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="scripts/shared.js"></script>
+<script src="scripts/metrics.js"></script>
+
+</body>
+</html>
