@@ -241,9 +241,13 @@ document.getElementById('saveReportForm').onsubmit = async (e) => {
     e.preventDefault();
     const title = document.getElementById('report_title').value;
     
-    let category = 'performance';
-    if (currentUser && currentUser.role === 'analyst' && currentUser.sections && currentUser.sections.length > 0) {
-        category = currentUser.sections[0];
+    let categories = [];
+    if (currentUser.role === 'super_admin') {
+        categories = ['performance', 'behavioral', 'errors'];
+    } else if (currentUser.sections && currentUser.sections.length > 0) {
+        categories = currentUser.sections;
+    } else {
+        categories = ['performance']; // Fallback
     }
 
     const config = {
@@ -252,19 +256,16 @@ document.getElementById('saveReportForm').onsubmit = async (e) => {
     };
 
     try {
-        const res = await fetch(`${REPORTS_API}?action=create_report`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title, category, config })
-        });
-
-        if (res.ok) {
-            alert("Report saved successfully!");
-            closeReportModal();
-        } else {
-            const err = await res.json();
-            alert("Error: " + err.error);
+        // Save a report for each category assigned to the analyst
+        for (const category of categories) {
+            await fetch(`${REPORTS_API}?action=create_report`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title, category, config })
+            });
         }
+        alert("Report(s) saved successfully!");
+        closeReportModal();
     } catch (err) {
         console.error("Failed to save report:", err);
     }
@@ -277,39 +278,73 @@ window.exportPDF = async function () {
     container.style.width = "1000px";
     container.style.background = "white";
     container.style.padding = "20px";
+    container.style.fontFamily = "Arial, sans-serif";
 
-    const createPage = (title) => {
+    const createPage = (titleText) => {
         const div = document.createElement("div");
         div.style.pageBreakAfter = "always";
         div.style.textAlign = "center";
+        div.style.padding = "20px";
         const h = document.createElement("h2");
-        h.innerText = title;
+        h.innerText = titleText;
         div.appendChild(h);
         return div;
     };
 
+    // 1. Charts
     const charts = [
         {obj: eventChart, name: "Event Distribution"},
         {obj: timeChart, name: "Events Over Time"},
         {obj: referrerChart, name: "Top Referrers"},
         {obj: sessionChart, name: "Session Activity"}
     ];
+
     charts.forEach(c => {
         if (!c.obj) return;
         const p = createPage(c.name);
         const img = document.createElement("img");
         img.src = c.obj.toBase64Image();
         img.style.width = "90%";
+        img.style.border = "1px solid #eee";
         p.appendChild(img);
         container.appendChild(p);
     });
 
+    // 2. Table Data
+    const table = document.getElementById("metricsTable");
+    if (table) {
+        const p = createPage("Data Snapshot (Top 20)");
+        const clone = table.cloneNode(true);
+        const rows = clone.querySelectorAll("tbody tr");
+        rows.forEach((r, i) => { if (i > 20) r.remove(); });
+        
+        clone.style.width = "100%";
+        clone.style.borderCollapse = "collapse";
+        clone.style.fontSize = "10px";
+        clone.querySelectorAll("th, td").forEach(cell => {
+            cell.style.border = "1px solid #ccc";
+            cell.style.padding = "6px";
+            cell.style.whiteSpace = "normal";
+            cell.style.wordBreak = "break-all";
+        });
+        p.appendChild(clone);
+        container.appendChild(p);
+    }
+
     document.body.appendChild(container);
     await new Promise(r => setTimeout(r, 500));
-    const opt = { margin: 0.5, filename: "metrics-dashboard.pdf", image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: "in", format: "letter", orientation: "landscape" } };
+    const opt = { 
+        margin: 0.5, 
+        filename: "metrics-dashboard.pdf", 
+        image: { type: 'jpeg', quality: 0.98 }, 
+        html2canvas: { scale: 2, useCORS: true }, 
+        jsPDF: { unit: "in", format: "letter", orientation: "landscape" } 
+    };
     
     try {
         await html2pdf().set(opt).from(container).save();
+    } catch (err) {
+        console.error("PDF Export failed:", err);
     } finally {
         document.body.removeChild(container);
     }
