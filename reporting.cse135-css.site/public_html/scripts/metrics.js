@@ -6,7 +6,7 @@ let sessionChart = null;
 document.addEventListener('DOMContentLoaded', async () => {
     const user = await checkAuth();
     if (!user) {
-        window.location.href = '/index.html'; // Go to login if not authenticated
+        window.location.href = '/'; // Go to login if not authenticated
         return;
     }
 

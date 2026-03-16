@@ -7,7 +7,7 @@ let currentReportId = null;
 document.addEventListener('DOMContentLoaded', async () => {
     const user = await checkAuth();
     if (!user) {
-        window.location.href = '/index.html';
+        window.location.href = '/';
         return;
     }
 
