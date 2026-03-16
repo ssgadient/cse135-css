@@ -116,16 +116,16 @@ async function loadReportDetails(id) {
         const res = await fetch(`${REPORTS_API}?id=${id}`);
         const report = await res.json();
         
+        if (!res.ok) {
+            alert("Error: " + (report.error || "Failed to load report"));
+            return;
+        }
+
         document.getElementById('selectedReport').style.display = 'block';
         document.getElementById('reportTitle').innerText = report.title;
         
-        // Load data for the report based on its config
-        const config = JSON.parse(report.config);
-        const params = new URLSearchParams(config);
-        const dataRes = await fetch(`${METRICS_API_BASE}?${params.toString()}`);
-        const data = await dataRes.json();
-        
-        renderReportChart(data);
+        // Data is now provided directly by reports.php
+        renderReportChart(report.data);
         renderComments(report.comments);
         
         // Scroll to the report details

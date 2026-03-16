@@ -31,7 +31,7 @@ try {
         $report_id = $_GET['id'] ?? null;
         
         if ($report_id) {
-            // Fetch specific report and its comments
+            // Fetch specific report and its creator
             $stmt = $pdo->prepare("SELECT r.*, u.username as creator_name FROM reports r JOIN users u ON r.created_by = u.id WHERE r.id = ?");
             $stmt->execute([$report_id]);
             $report = $stmt->fetch();
@@ -42,13 +42,50 @@ try {
                 exit();
             }
 
-            // Check if analyst has access to this category
-            if ($role === 'analyst' && !in_array($report['category'], $sections)) {
-                http_response_code(403);
-                echo json_encode(["error" => "Access denied to this report category"]);
-                exit();
+            // Fetch metrics data based on the report's config
+            $config = json_decode($report['config'], true);
+            $typeFilter = $config['type'] ?? null;
+            $sessionFilter = $config['session'] ?? null;
+
+            $mQuery = "SELECT * FROM metric_logs";
+            $mConds = [];
+            $mParams = [];
+
+            if ($typeFilter) {
+                $mConds[] = "event_type = ?";
+                $mParams[] = $typeFilter;
+            }
+            if ($sessionFilter) {
+                $mConds[] = "session_id = ?";
+                $mParams[] = $sessionFilter;
             }
 
+            // If it's a category-wide report with no specific filters, we filter by the category's mapped types
+            // This ensures the report only shows what it's supposed to
+            if (!$typeFilter) {
+                $sectionMapping = [
+                    'performance' => ['performance', 'static', 'enter', 'exit', 'load', 'fcp', 'lcp', 'fid', 'cls', 'ttfb'],
+                    'behavioral'  => ['click', 'scroll', 'mousemove', 'keydown', 'keyup', 'idle_start', 'idle_end', 'input', 'hover', 'submit'],
+                    'errors'      => ['js-error', 'promise-rejection', 'resource-error', '404-error', 'api-error']
+                ];
+                if (isset($sectionMapping[$report['category']])) {
+                    $allowed = $sectionMapping[$report['category']];
+                    $placeholders = implode(',', array_fill(0, count($allowed), '?'));
+                    $mConds[] = "event_type IN ($placeholders)";
+                    $mParams = array_merge($mParams, $allowed);
+                }
+            }
+
+            if ($mConds) {
+                $mQuery .= " WHERE " . implode(" AND ", $mConds);
+            }
+            $mQuery .= " ORDER BY server_timestamp DESC LIMIT 1000";
+
+            $mStmt = $pdo->prepare($mQuery);
+            $mStmt->execute($mParams);
+            $report['data'] = $mStmt->fetchAll();
+
+            // Fetch comments
             $stmt = $pdo->prepare("SELECT c.*, u.username FROM analyst_comments c JOIN users u ON c.user_id = u.id WHERE c.report_id = ? ORDER BY c.created_at DESC");
             $stmt->execute([$report_id]);
             $report['comments'] = $stmt->fetchAll();
@@ -59,16 +96,7 @@ try {
             $query = "SELECT r.*, u.username as creator_name FROM reports r JOIN users u ON r.created_by = u.id";
             $params = [];
             
-            if ($role === 'analyst') {
-                if (empty($sections)) {
-                    echo json_encode([]);
-                    exit();
-                }
-                $placeholders = implode(',', array_fill(0, count($sections), '?'));
-                $query .= " WHERE r.category IN ($placeholders)";
-                $params = $sections;
-            }
-            
+            // AUTHORIZATION: All authenticated users can see the full list of reports.
             $stmt = $pdo->prepare($query);
             $stmt->execute($params);
             echo json_encode($stmt->fetchAll());
