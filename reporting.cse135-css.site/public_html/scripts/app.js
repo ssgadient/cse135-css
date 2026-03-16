@@ -1,5 +1,5 @@
 const METRICS_API_BASE = "/api/metrics";
-const REPORTS_API = "/api/reports.php";
+const REPORTS_API = "/api/reports";
 const LOGIN_API = "/api/login";
 const LOGOUT_API = "/api/logout";
 const ADMIN_API = "/api/admin/manage_users";
@@ -595,77 +595,121 @@ window.exportPDF = async function () {
     container.style.background = "white";
     container.style.fontFamily = "Arial, sans-serif";
 
-    const createPage = (titleText) => {
+    // 1. Detect which view is active
+    const isMetricsView = document.getElementById('metricsView')?.style.display !== 'none';
+    const isReportsView = document.getElementById('reportsView')?.style.display !== 'none';
+
+    // Helper for standardized page containers
+    const createPage = (titleText, forceBreak = true) => {
         const section = document.createElement("div");
-        section.style.padding = "20px 40px";
-        section.style.pageBreakAfter = "always"; 
+        section.style.padding = "30px";
+        // Force break ensures the NEXT element starts on a new page
+        if (forceBreak) section.style.pageBreakAfter = "always"; 
         section.style.display = "flex";
         section.style.flexDirection = "column";
         section.style.alignItems = "center";
 
         const header = document.createElement("h2");
         header.textContent = titleText;
-        header.style.margin = "0 0 15px 0";
+        header.style.margin = "0 0 20px 0";
+        header.style.fontSize = "22px";
         section.appendChild(header);
-        
         return section;
     };
 
-    /* ===== CHARTS ===== */
-    const chartConfigs = [
-        { obj: eventChart, name: "Event Distribution" },
-        { obj: timeChart, name: "Events Over Time" },
-        { obj: referrerChart, name: "Top Referrers" },
-        { obj: sessionChart, name: "Session Activity" }
-    ];
+    /* ===== OPTION A: RAW METRICS VIEW ===== */
+    if (isMetricsView) {
+        const chartConfigs = [
+            { obj: eventChart, name: "Event Distribution" },
+            { obj: timeChart, name: "Events Over Time" },
+            { obj: referrerChart, name: "Top Referrers" },
+            { obj: sessionChart, name: "Session Activity" }
+        ];
 
-    chartConfigs.forEach(config => {
-        if (!config.obj) return;
-        const page = createPage(config.name);
-        const img = document.createElement("img");
-        img.src = config.obj.toBase64Image();
-        img.style.width = "90%";
-        img.style.height = "auto";
-        img.style.border = "1px solid #eee";
-        page.appendChild(img);
-        container.appendChild(page);
-    });
-
-    /* ===== TABLE ===== */
-    const table = document.getElementById("metricsTable");
-    if (table) {
-        const tablePage = createPage("Metrics Data Preview");
-        const preview = table.cloneNode(true);
-        
-        // Only include first 20 rows for brevity in PDF
-        const rows = preview.querySelectorAll("tbody tr");
-        rows.forEach((row, i) => { if (i > 20) row.remove(); });
-
-        preview.style.width = "100%";
-        preview.style.borderCollapse = "collapse";
-        preview.style.fontSize = "10px";
-        preview.querySelectorAll("th, td").forEach(cell => {
-            cell.style.border = "1px solid #ccc";
-            cell.style.padding = "6px";
-            cell.style.whiteSpace = "normal";
-            cell.style.wordBreak = "break-all";
+        // Charts: One per page
+        chartConfigs.forEach(config => {
+            if (!config.obj) return;
+            const page = createPage(config.name);
+            const img = document.createElement("img");
+            img.src = config.obj.toBase64Image();
+            img.style.width = "95%"; 
+            img.style.maxWidth = "900px";
+            img.style.height = "auto";
+            img.style.border = "1px solid #eee";
+            page.appendChild(img);
+            container.appendChild(page);
         });
 
-        tablePage.appendChild(preview);
-        container.appendChild(tablePage);
+        // Table: High Density
+        const table = document.getElementById("metricsTable");
+        if (table && table.querySelector('tbody tr')) {
+
+            const tablePage = createPage("Metrics Data", false);
+            const preview = table.cloneNode(true);
+            const rows = preview.querySelectorAll("tbody tr");
+            rows.forEach((row, i) => { if (i > 29) row.remove(); });
+
+            preview.style.width = "100%";
+            preview.style.borderCollapse = "collapse";
+            preview.style.fontSize = "8.5px"; 
+            preview.style.tableLayout = "fixed"; 
+
+            preview.querySelectorAll("th, td").forEach(cell => {
+                cell.style.border = "1px solid #ccc";
+                cell.style.padding = "5px 3px";
+                cell.style.wordBreak = "break-all"; // Wraps long URLs/IDs
+                cell.style.verticalAlign = "top";
+            });
+            tablePage.appendChild(preview);
+            container.appendChild(tablePage);
+        }
+    } 
+
+    /* ===== OPTION B: SAVED REPORTS VIEW ===== */
+    else if (isReportsView) {
+        const selectedReport = document.getElementById('selectedReport');
+        // Only export if a report is actually selected
+        if (selectedReport && selectedReport.style.display !== 'none') {
+            const reportTitle = document.getElementById('reportTitle').innerText;
+            const page = createPage(`Saved Report: ${reportTitle}`);
+            
+            if (reportChart) {
+                const img = document.createElement("img");
+                img.src = reportChart.toBase64Image();
+                img.style.width = "90%";
+                img.style.border = "1px solid #eee";
+                page.appendChild(img);
+            }
+
+            // Capture Analyst Comments
+            const commentsDiv = document.getElementById('commentsList').cloneNode(true);
+            const commentHeader = document.createElement("h3");
+            commentHeader.innerText = "Analyst Comments";
+            commentHeader.style.marginTop = "30px";
+            page.appendChild(commentHeader);
+            page.appendChild(commentsDiv);
+            container.appendChild(page);
+        } else {
+            // Fallback: If on reports tab but none selected, list all reports
+            const page = createPage("Available Saved Reports");
+            const listClone = document.getElementById('reportsList').cloneNode(true);
+            page.appendChild(listClone);
+            container.appendChild(page);
+        }
     }
 
+    /* --- Final Export Execution --- */
     document.body.appendChild(container);
     
-    // Give browser a moment to render the off-screen content
-    await new Promise(r => setTimeout(r, 300));
+    // Increased delay to ensure 30 rows of table data are fully layouted
+    await new Promise(r => setTimeout(r, 800));
 
     const opt = {
-        margin: 0.5,
-        filename: "metrics-report.pdf",
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: "in", format: "letter", orientation: "portrait" }
+        margin: 0.2, // Small margins to maximize space
+        filename: "dashboard-report.pdf",
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
+        html2canvas: { scale: 2, useCORS: true, width: 1050 },
+        jsPDF: { unit: "in", format: "letter", orientation: "landscape" }
     };
 
     try {
