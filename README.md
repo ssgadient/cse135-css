@@ -1,17 +1,9 @@
 # CSE135 - Team CSS
+Homepage (Secured): https://www.cse135-css.site \
+Test Site: https://test.cse135-css.site \
+Database Reporting Site: https://reporting.cse135-css.site
 
-Homepage: https://www.cse135-css.site 
-
-Test Site: https://test.cse135-css.site/
-
-Database Reporting Site: https://reporting.cse135-css.site/
-
-**SSH Login and Site Access Credentials:** \
-Server IP: REDACTED \
-Username: REDACTED \
-Password: REDACTED
-
-**Team members:**
+## Team members
 - Christian Pacheco
 - Stefan Gadient
 - Sophie Phung
@@ -46,3 +38,5 @@ Part 1: We use the bcrypt hash function provided by php to securely store user p
 Part 2: The file app.js acts as the frontend  and user interface which requests data from another file metrics.php, acts as the backend and fetcher of data which then connects back to app.js in order to display the data in the user interface as an HTML table
 
 Part 3: The reporting dashboard visualizes analytics data using Chart.js. Data is retrieved from the existing /api/metrics endpoint and aggregated by event_type in the frontend. The results are rendered as a bar chart showing the distribution of event types collected by the analytics system.
+
+## Homework 5
