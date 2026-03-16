@@ -40,3 +40,21 @@ Part 2: The file app.js acts as the frontend  and user interface which requests
 Part 3: The reporting dashboard visualizes analytics data using Chart.js. Data is retrieved from the existing /api/metrics endpoint and aggregated by event_type in the frontend. The results are rendered as a bar chart showing the distribution of event types collected by the analytics system.
 
 ## Homework 5
+
+### Technical Particulars
+This project is a full-stack web analytics dashboard designed to ingest, visualize, and report on user interaction data.
+- **Frontend:** Pure HTML/JS/CSS with Chart.js for visualization and html2pdf.js for custom reporting.
+- **Backend:** PHP REST API handling CRUD operations for metrics and saved reports.
+- **Database:** MySQL storing event logs, reports, and analyst comments.
+- **PDF Export Engine:** A custom-built landscape export module that handles high-density data with automatic page-breaking and context-aware rendering based on user roles.
+
+### Use of AI
+AI was partly utilized during the development of this project, specifically for:
+- **CSS Layout Debugging:** Optimizing the transition from portrait to landscape PDF exports.
+
+**Observation of Value:** AI provided value in handling boilerplate CSS and edge-case debugging (such as preventing table and chart cut-off). However, human intervention was critical for ensuring the security of session-based authorization and the logical flow of the multi-level user system.
+
+### Roadmap & Future Enhancements
+- **Real-time Updates:** Implement WebSockets for live data streaming to the dashboard.
+- **Advanced Filtering:** Add date-range pickers and regex-based search for the metrics table.
+- **Enhanced Security:** Implement 2FA for Super Admin accounts.
