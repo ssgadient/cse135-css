@@ -1,3 +1,14 @@
+<?php
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header("Location: /");
+    exit();
+}
+if ($_SESSION['role'] === 'viewer') {
+    header("Location: /reports");
+    exit();
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
