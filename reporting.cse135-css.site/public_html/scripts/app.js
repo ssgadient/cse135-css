@@ -586,19 +586,18 @@ function formatDate(ts) {
    PDF EXPORT
 ========================== */
 window.exportPDF = async function () {
+    // Create a hidden container for PDF generation to avoid "flashing" the live UI
     const container = document.createElement("div");
-    
-    // Maintain landscape-friendly width
+    container.style.position = "absolute";
+    container.style.left = "-9999px";
+    container.style.top = "0";
     container.style.width = "1000px"; 
-    container.style.margin = "0 auto";
     container.style.background = "white";
     container.style.fontFamily = "Arial, sans-serif";
 
-    /* Helper with reduced vertical padding and auto-height */
     const createPage = (titleText) => {
         const section = document.createElement("div");
-        section.style.padding = "20px 40px"; // Reduced top/bottom padding
-        section.style.height = "auto";       // Remove fixed 750px height
+        section.style.padding = "20px 40px";
         section.style.pageBreakAfter = "always"; 
         section.style.display = "flex";
         section.style.flexDirection = "column";
@@ -606,7 +605,7 @@ window.exportPDF = async function () {
 
         const header = document.createElement("h2");
         header.textContent = titleText;
-        header.style.margin = "0 0 15px 0"; // Tighten header margin
+        header.style.margin = "0 0 15px 0";
         section.appendChild(header);
         
         return section;
@@ -622,17 +621,12 @@ window.exportPDF = async function () {
 
     chartConfigs.forEach(config => {
         if (!config.obj) return;
-        
         const page = createPage(config.name);
         const img = document.createElement("img");
         img.src = config.obj.toBase64Image();
-        
-        // Large width for landscape, but allow it to dictate its own height
-        img.style.width = "95%"; 
-        img.style.maxWidth = "950px";
+        img.style.width = "90%";
         img.style.height = "auto";
         img.style.border = "1px solid #eee";
-        
         page.appendChild(img);
         container.appendChild(page);
     });
@@ -640,19 +634,21 @@ window.exportPDF = async function () {
     /* ===== TABLE ===== */
     const table = document.getElementById("metricsTable");
     if (table) {
-        const tablePage = createPage("Full Metrics Table Preview");
+        const tablePage = createPage("Metrics Data Preview");
         const preview = table.cloneNode(true);
         
+        // Only include first 20 rows for brevity in PDF
         const rows = preview.querySelectorAll("tbody tr");
-        rows.forEach((row, i) => { if (i > 15) row.remove(); });
+        rows.forEach((row, i) => { if (i > 20) row.remove(); });
 
         preview.style.width = "100%";
         preview.style.borderCollapse = "collapse";
         preview.style.fontSize = "10px";
-
         preview.querySelectorAll("th, td").forEach(cell => {
             cell.style.border = "1px solid #ccc";
             cell.style.padding = "6px";
+            cell.style.whiteSpace = "normal";
+            cell.style.wordBreak = "break-all";
         });
 
         tablePage.appendChild(preview);
@@ -660,26 +656,23 @@ window.exportPDF = async function () {
     }
 
     document.body.appendChild(container);
-    await new Promise(r => setTimeout(r, 500));
+    
+    // Give browser a moment to render the off-screen content
+    await new Promise(r => setTimeout(r, 300));
 
     const opt = {
-        margin: 0,
-        filename: "metrics-report-compact.pdf",
+        margin: 0.5,
+        filename: "metrics-report.pdf",
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { 
-            scale: 2, 
-            useCORS: true,
-            width: 1050 
-        },
-        jsPDF: { 
-            unit: "in", 
-            format: "letter", 
-            orientation: "landscape" 
-        }
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: "in", format: "letter", orientation: "portrait" }
     };
 
     try {
         await html2pdf().set(opt).from(container).save();
+    } catch (err) {
+        console.error("PDF Export failed:", err);
+        alert("Export failed. Check console for details.");
     } finally {
         document.body.removeChild(container);
     }
