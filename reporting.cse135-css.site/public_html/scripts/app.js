@@ -108,7 +108,7 @@ function renderReportsList(reports) {
             <h3>${report.title}</h3>
             <p>Category: ${report.category}</p>
             <p>Created by: ${report.creator_name}</p>
-            <p>Date: ${new Date(report.created_at).toLocaleDateString()}</p>
+            <p>Date: ${new Date(report.created_at).toLocaleString()}</p>
         `;
         card.onclick = () => loadReportDetails(report.id);
         list.appendChild(card);
@@ -251,7 +251,12 @@ function closeReportModal() {
 document.getElementById('saveReportForm').onsubmit = async (e) => {
     e.preventDefault();
     const title = document.getElementById('report_title').value;
-    const category = document.getElementById('report_category').value;
+    
+    // Determine category based on user role/sections
+    let category = 'performance'; // Default for Super Admin
+    if (currentUser && currentUser.role === 'analyst' && currentUser.sections && currentUser.sections.length > 0) {
+        category = currentUser.sections[0]; // Use analyst's primary section
+    }
     
     // Use current filters as config
     const config = {
@@ -445,7 +450,8 @@ function renderEventChart(rows) {
       labels: Object.keys(counts),
       datasets: [{
         label: "Event Count",
-        data: Object.values(counts)
+        data: Object.values(counts),
+        backgroundColor: '#8b5cf6'
       }]
     }
   });
@@ -503,7 +509,8 @@ function renderReferrerChart(rows) {
       labels: Object.keys(counts),
       datasets: [{
         label: "Referrers",
-        data: Object.values(counts)
+        data: Object.values(counts),
+        backgroundColor: ['#8b5cf6', '#a78bfa', '#c4b5fd', '#ddd6fe']
       }]
     }
   });
