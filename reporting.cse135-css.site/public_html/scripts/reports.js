@@ -42,11 +42,12 @@ function renderReportsList(reports) {
     }
 
     reports.forEach(report => {
+        const categoriesText = Array.isArray(report.categories) ? report.categories.join(', ') : 'None';
         const card = document.createElement('div');
         card.className = 'report-card';
         card.innerHTML = `
             <h3>${report.title}</h3>
-            <p><strong>Category:</strong> ${report.category}</p>
+            <p><strong>Categories:</strong> ${categoriesText}</p>
             <p><strong>Author:</strong> ${report.creator_name}</p>
             <p><small>${new Date(report.created_at).toLocaleString()}</small></p>
         `;

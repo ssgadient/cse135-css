@@ -259,16 +259,19 @@ document.getElementById('saveReportForm').onsubmit = async (e) => {
     };
 
     try {
-        // Save a report for each category assigned to the analyst
-        for (const category of categories) {
-            await fetch(`${REPORTS_API}?action=create_report`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title, category, config })
-            });
+        const res = await fetch(`${REPORTS_API}?action=create_report`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, categories, config })
+        });
+
+        if (res.ok) {
+            alert("Report saved successfully!");
+            closeReportModal();
+        } else {
+            const err = await res.json();
+            alert("Error: " + (err.error || "Failed to save report"));
         }
-        alert("Report(s) saved successfully!");
-        closeReportModal();
     } catch (err) {
         console.error("Failed to save report:", err);
     }

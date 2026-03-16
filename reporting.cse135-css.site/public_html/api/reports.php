@@ -9,11 +9,6 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $configPath = __DIR__ . '/../../db_config.php';
-if (!file_exists($configPath)) {
-    http_response_code(500);
-    echo json_encode(["error" => "Database configuration missing"]);
-    exit();
-}
 $config = include($configPath);
 
 try {
@@ -25,13 +20,11 @@ try {
     $method = $_SERVER['REQUEST_METHOD'];
     $role = $_SESSION['role'];
     $user_id = $_SESSION['user_id'];
-    $sections = $_SESSION['sections'] ?? [];
 
     if ($method === 'GET') {
         $report_id = $_GET['id'] ?? null;
         
         if ($report_id) {
-            // 1. Fetch specific report metadata
             $stmt = $pdo->prepare("SELECT r.*, u.username as creator_name FROM reports r JOIN users u ON r.created_by = u.id WHERE r.id = ?");
             $stmt->execute([$report_id]);
             $report = $stmt->fetch();
@@ -42,15 +35,14 @@ try {
                 exit();
             }
 
-            // AUTHORIZATION: All authenticated users (Admins, Analysts, Viewers) can view any saved report.
-            
-            // 2. Fetch metrics data snapshot for this report
+            // Decode configuration and categories
+            $report_categories = json_decode($report['categories'], true) ?? [];
             $config = json_decode($report['config'], true);
             $typeFilter = $config['type'] ?? null;
             $sessionFilter = $config['session'] ?? null;
 
             $mQuery = "SELECT * FROM metric_logs";
-            $mConds = ["server_timestamp <= ?"]; // Static Snapshot Logic
+            $mConds = ["server_timestamp <= ?"]; 
             $mParams = [$report['created_at']];
 
             if ($typeFilter) {
@@ -62,15 +54,23 @@ try {
                 $mParams[] = $sessionFilter;
             }
 
-            // If no specific type filter, use the category mapping
-            if (!$typeFilter) {
+            // Aggregated event type filtering based on ALL categories in the report
+            if (!$typeFilter && !empty($report_categories)) {
                 $sectionMapping = [
                     'performance' => ['performance', 'static', 'enter', 'exit', 'load', 'fcp', 'lcp', 'fid', 'cls', 'ttfb'],
                     'behavioral'  => ['click', 'scroll', 'mousemove', 'keydown', 'keyup', 'idle_start', 'idle_end', 'input', 'hover', 'submit'],
                     'errors'      => ['js-error', 'promise-rejection', 'resource-error', '404-error', 'api-error']
                 ];
-                if (isset($sectionMapping[$report['category']])) {
-                    $allowed = $sectionMapping[$report['category']];
+                
+                $allowed = [];
+                foreach ($report_categories as $cat) {
+                    if (isset($sectionMapping[$cat])) {
+                        $allowed = array_merge($allowed, $sectionMapping[$cat]);
+                    }
+                }
+                $allowed = array_unique($allowed);
+
+                if (!empty($allowed)) {
                     $placeholders = implode(',', array_fill(0, count($allowed), '?'));
                     $mConds[] = "event_type IN ($placeholders)";
                     $mParams = array_merge($mParams, $allowed);
@@ -82,17 +82,18 @@ try {
             $mStmt->execute($mParams);
             $report['data'] = $mStmt->fetchAll();
 
-            // 3. Fetch comments
             $stmt = $pdo->prepare("SELECT c.*, u.username FROM analyst_comments c JOIN users u ON c.user_id = u.id WHERE c.report_id = ? ORDER BY c.created_at DESC");
             $stmt->execute([$report_id]);
             $report['comments'] = $stmt->fetchAll();
             
             echo json_encode($report);
         } else {
-            // Fetch list of all reports
-            $query = "SELECT r.*, u.username as creator_name FROM reports r JOIN users u ON r.created_by = u.id ORDER BY r.created_at DESC";
-            $stmt = $pdo->query($query);
-            echo json_encode($stmt->fetchAll());
+            $stmt = $pdo->query("SELECT r.*, u.username as creator_name FROM reports r JOIN users u ON r.created_by = u.id ORDER BY r.created_at DESC");
+            $results = $stmt->fetchAll();
+            foreach ($results as &$row) {
+                $row['categories'] = json_decode($row['categories'], true);
+            }
+            echo json_encode($results);
         }
     }
 
@@ -107,8 +108,8 @@ try {
         $action = $_GET['action'] ?? 'create_report';
 
         if ($action === 'create_report') {
-            $stmt = $pdo->prepare("INSERT INTO reports (title, category, config, created_by) VALUES (?, ?, ?, ?)");
-            $stmt->execute([$data['title'], $data['category'], json_encode($data['config']), $user_id]);
+            $stmt = $pdo->prepare("INSERT INTO reports (title, categories, config, created_by) VALUES (?, ?, ?, ?)");
+            $stmt->execute([$data['title'], json_encode($data['categories']), json_encode($data['config']), $user_id]);
             echo json_encode(["status" => "success", "id" => $pdo->lastInsertId()]);
         } 
         elseif ($action === 'add_comment') {
