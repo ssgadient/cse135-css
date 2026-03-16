@@ -84,7 +84,10 @@ function renderReportCharts(data) {
 
     // 1. Event Type
     const typeCounts = {};
-    data.forEach(row => { typeCounts[row.event_type || "unknown"] = (typeCounts[row.event_type] || 0) + 1; });
+    data.forEach(row => { 
+        const type = row.event_type || "unknown";
+        typeCounts[type] = (typeCounts[type] || 0) + 1; 
+    });
     if (reportEventChart) reportEventChart.destroy();
     reportEventChart = new Chart(document.getElementById("reportEventChart"), {
         type: "bar",
