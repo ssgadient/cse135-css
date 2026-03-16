@@ -10,7 +10,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 // 2. Load the Database Config
-$configPath = __DIR__ . '/../db_config.php';
+$configPath = __DIR__ . '/../../db_config.php';
 if (!file_exists($configPath)) {
     http_response_code(500);
     echo json_encode(["error" => "Database configuration file missing."]);
