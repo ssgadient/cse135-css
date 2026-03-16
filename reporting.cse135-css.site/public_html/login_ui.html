@@ -41,8 +41,8 @@
 
             if (res.ok) {
                 const data = await res.json();
-                if (data.role === 'viewer') window.location.href = 'reports.html';
-                else window.location.href = 'metrics.html';
+                if (data.role === 'viewer') window.location.href = '/reports';
+                else window.location.href = '/metrics';
             } else {
                 errorDiv.innerText = "Invalid username or password";
             }

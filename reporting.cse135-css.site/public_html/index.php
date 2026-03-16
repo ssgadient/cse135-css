@@ -12,9 +12,9 @@ $role = $_SESSION['role'] ?? 'viewer';
 
 if ($role === 'viewer') {
     // Viewers only see saved reports
-    header("Location: reports.html");
+    header("Location: /reports");
 } else {
     // Admins and Analysts see live metrics by default
-    header("Location: metrics.html");
+    header("Location: /metrics");
 }
 exit();
