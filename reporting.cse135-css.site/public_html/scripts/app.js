@@ -1,5 +1,5 @@
 const METRICS_API_BASE = "/api/metrics";
-const REPORTS_API = "/api/reports.php";
+const REPORTS_API = "/api/reports";
 const LOGIN_API = "/api/login";
 const LOGOUT_API = "/api/logout";
 const ADMIN_API = "/api/admin/manage_users";
@@ -587,31 +587,34 @@ function formatDate(ts) {
 ========================== */
 window.exportPDF = async function () {
     const container = document.createElement("div");
-    container.style.width = "1050px"; 
+    container.style.width = "1000px"; 
     container.style.margin = "0 auto";
     container.style.background = "white";
     container.style.fontFamily = "Arial, sans-serif";
 
-    // Detect which view is active
-    const isMetricsView = document.getElementById('metricsView').style.display !== 'none';
-    const isReportsView = document.getElementById('reportsView').style.display !== 'none';
+    // 1. Detect which view is active
+    const isMetricsView = document.getElementById('metricsView')?.style.display !== 'none';
+    const isReportsView = document.getElementById('reportsView')?.style.display !== 'none';
 
-    const createPage = (titleText) => {
+    // Helper for standardized page containers
+    const createPage = (titleText, forceBreak = true) => {
         const section = document.createElement("div");
-        section.style.padding = "20px 30px";
-        section.style.pageBreakAfter = "always"; 
+        section.style.padding = "30px";
+        // Force break ensures the NEXT element starts on a new page
+        if (forceBreak) section.style.pageBreakAfter = "always"; 
         section.style.display = "flex";
         section.style.flexDirection = "column";
         section.style.alignItems = "center";
 
         const header = document.createElement("h2");
         header.textContent = titleText;
-        header.style.margin = "0 0 10px 0";
+        header.style.margin = "0 0 20px 0";
+        header.style.fontSize = "22px";
         section.appendChild(header);
         return section;
     };
 
-    /* ===== LOGIC FOR RAW METRICS VIEW ===== */
+    /* ===== OPTION A: RAW METRICS VIEW ===== */
     if (isMetricsView) {
         const chartConfigs = [
             { obj: eventChart, name: "Event Distribution" },
@@ -620,54 +623,53 @@ window.exportPDF = async function () {
             { obj: sessionChart, name: "Session Activity" }
         ];
 
-        // Charts: 2 per page
-        for (let i = 0; i < chartConfigs.length; i += 2) {
-            const page = createPage(`Metrics Charts ${i+1}-${i+2}`);
-            [chartConfigs[i], chartConfigs[i+1]].forEach(config => {
-                if (config && config.obj) {
-                    const img = document.createElement("img");
-                    img.src = config.obj.toBase64Image();
-                    img.style.width = "80%"; 
-                    img.style.marginBottom = "20px";
-                    page.appendChild(img);
-                }
-            });
+        // Charts: One per page
+        chartConfigs.forEach(config => {
+            if (!config.obj) return;
+            const page = createPage(config.name);
+            const img = document.createElement("img");
+            img.src = config.obj.toBase64Image();
+            img.style.width = "95%"; 
+            img.style.maxWidth = "900px";
+            img.style.height = "auto";
+            img.style.border = "1px solid #eee";
+            page.appendChild(img);
             container.appendChild(page);
-        }
+        });
 
-        // Table: High Density (30 Rows)
+        // Table: High Density
         const table = document.getElementById("metricsTable");
         if (table && table.querySelector('tbody tr')) {
-            const tablePage = createPage("Metrics Data Preview (30 Rows)");
+
+            const tablePage = createPage("Metrics Data", false);
             const preview = table.cloneNode(true);
             const rows = preview.querySelectorAll("tbody tr");
             rows.forEach((row, i) => { if (i > 29) row.remove(); });
 
             preview.style.width = "100%";
             preview.style.borderCollapse = "collapse";
-            preview.style.fontSize = "8px"; 
+            preview.style.fontSize = "8.5px"; 
             preview.style.tableLayout = "fixed"; 
 
             preview.querySelectorAll("th, td").forEach(cell => {
                 cell.style.border = "1px solid #ccc";
-                cell.style.padding = "4px 2px";
-                cell.style.wordBreak = "break-all";
-                cell.style.overflow = "hidden";
+                cell.style.padding = "5px 3px";
+                cell.style.wordBreak = "break-all"; // Wraps long URLs/IDs
+                cell.style.verticalAlign = "top";
             });
             tablePage.appendChild(preview);
             container.appendChild(tablePage);
         }
     } 
 
-    /* ===== LOGIC FOR SAVED REPORTS VIEW ===== */
+    /* ===== OPTION B: SAVED REPORTS VIEW ===== */
     else if (isReportsView) {
-        const reportTitle = document.getElementById('reportTitle').innerText;
         const selectedReport = document.getElementById('selectedReport');
-
-        if (selectedReport.style.display !== 'none') {
-            const page = createPage(`Report: ${reportTitle}`);
+        // Only export if a report is actually selected
+        if (selectedReport && selectedReport.style.display !== 'none') {
+            const reportTitle = document.getElementById('reportTitle').innerText;
+            const page = createPage(`Saved Report: ${reportTitle}`);
             
-            // 1. Capture the specific Report Chart
             if (reportChart) {
                 const img = document.createElement("img");
                 img.src = reportChart.toBase64Image();
@@ -676,17 +678,16 @@ window.exportPDF = async function () {
                 page.appendChild(img);
             }
 
-            // 2. Capture Comments
+            // Capture Analyst Comments
             const commentsDiv = document.getElementById('commentsList').cloneNode(true);
             const commentHeader = document.createElement("h3");
             commentHeader.innerText = "Analyst Comments";
             commentHeader.style.marginTop = "30px";
-            
             page.appendChild(commentHeader);
             page.appendChild(commentsDiv);
             container.appendChild(page);
         } else {
-            // If viewing the list of reports but none selected
+            // Fallback: If on reports tab but none selected, list all reports
             const page = createPage("Available Saved Reports");
             const listClone = document.getElementById('reportsList').cloneNode(true);
             page.appendChild(listClone);
@@ -694,13 +695,17 @@ window.exportPDF = async function () {
         }
     }
 
+    /* --- Final Export Execution --- */
     document.body.appendChild(container);
-    await new Promise(r => setTimeout(r, 600)); // Delay for image rendering
+    
+    // Increased delay to ensure 30 rows of table data are fully layouted
+    await new Promise(r => setTimeout(r, 800));
 
     const opt = {
-        margin: 0.2,
-        filename: isMetricsView ? "raw-metrics.pdf" : "saved-report.pdf",
-        html2canvas: { scale: 2, useCORS: true, width: 1100 },
+        margin: 0.2, // Small margins to maximize space
+        filename: "dashboard-report.pdf",
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
+        html2canvas: { scale: 2, useCORS: true, width: 1050 },
         jsPDF: { unit: "in", format: "letter", orientation: "landscape" }
     };
 
