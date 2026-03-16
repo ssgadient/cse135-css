@@ -276,12 +276,11 @@ document.getElementById('saveReportForm').onsubmit = async (e) => {
 
 window.exportPDF = async function () {
     const container = document.createElement("div");
-    container.style.position = "absolute";
-    container.style.left = "-9999px";
-    container.style.width = "1000px";
+
+    container.style.width = "1000px"; 
     container.style.background = "white";
-    container.style.padding = "20px";
     container.style.fontFamily = "Arial, sans-serif";
+    container.style.color = "#000";
 
     const createPage = (titleText) => {
         const div = document.createElement("div");
