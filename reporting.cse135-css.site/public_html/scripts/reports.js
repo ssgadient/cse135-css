@@ -43,11 +43,16 @@ function renderReportsList(reports) {
 
     reports.forEach(report => {
         const categoriesText = Array.isArray(report.categories) ? report.categories.join(', ') : 'None';
+        const typeFilter = report.config?.type || "All";
+        const sessionFilter = report.config?.session || "All";
+
         const card = document.createElement('div');
         card.className = 'report-card';
         card.innerHTML = `
             <h3>${report.title}</h3>
             <p><strong>Categories:</strong> ${categoriesText}</p>
+            <p><strong>Filter Type:</strong> ${typeFilter}</p>
+            <p><strong>Filter Session:</strong> ${sessionFilter}</p>
             <p><strong>Author:</strong> ${report.creator_name}</p>
             <p><small>${new Date(report.created_at).toLocaleString()}</small></p>
         `;

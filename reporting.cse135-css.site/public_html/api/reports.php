@@ -92,6 +92,7 @@ try {
             $results = $stmt->fetchAll();
             foreach ($results as &$row) {
                 $row['categories'] = json_decode($row['categories'], true);
+                $row['config'] = json_decode($row['config'], true);
             }
             echo json_encode($results);
         }
