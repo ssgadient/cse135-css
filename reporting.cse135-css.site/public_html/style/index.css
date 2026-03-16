@@ -185,6 +185,7 @@ summary {
   cursor: pointer; 
   flex: 1; 
 }
+
 /* ==========================
    NAVIGATION
 ========================== */
@@ -197,6 +198,11 @@ summary {
     cursor: pointer;
     margin-right: 10px;
     transition: all 0.2s;
+    text-decoration: none;
+}
+
+#reportTitle {
+    margin-left: 20px;
 }
 
 .nav-btn:hover {
