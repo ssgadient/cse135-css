@@ -586,28 +586,20 @@ function formatDate(ts) {
    PDF EXPORT
 ========================== */
 window.exportPDF = async function () {
-    const container = document.createElement("div");
+    const isMetricsView = document.getElementById('metricsView').style.display !== 'none';
+    const isReportsView = document.getElementById('reportsView').style.display !== 'none';
 
-    container.style.position = "absolute";
-    container.style.top = "0";
-    container.style.left = "0";
-    container.style.opacity = "0";
-    container.style.zIndex = "-1";
+    const container = document.createElement("div");
     container.style.width = "1000px"; 
+    container.style.margin = "0 auto";
     container.style.background = "white";
     container.style.fontFamily = "Arial, sans-serif";
 
-    const metricsView = document.getElementById('metricsView');
-    const reportsView = document.getElementById('reportsView');
-    const isMetricsActive = metricsView && metricsView.style.display !== 'none';
-    const isReportsActive = reportsView && reportsView.style.display !== 'none';
-
-    /* Helper with reduced vertical padding and auto-height */
-    const createPage = (titleText, forceBreak = true) => {
+    const createPage = (titleText) => {
         const section = document.createElement("div");
         section.style.padding = "20px 40px";
         section.style.height = "auto";
-        if (forceBreak) section.style.pageBreakAfter = "always"; 
+        section.style.pageBreakAfter = "always"; 
         section.style.display = "flex";
         section.style.flexDirection = "column";
         section.style.alignItems = "center";
@@ -620,8 +612,8 @@ window.exportPDF = async function () {
         return section;
     };
 
-    /* ===== OPTION A: METRICS VIEW ===== */
-    if (isMetricsActive) {
+    if (isMetricsView) {
+        /* ===== METRICS IMPLEMENTATION ===== */
         const chartConfigs = [
             { obj: eventChart, name: "Event Distribution" },
             { obj: timeChart, name: "Events Over Time" },
@@ -629,7 +621,6 @@ window.exportPDF = async function () {
             { obj: sessionChart, name: "Session Activity" }
         ];
 
-        // Charts: One per page
         chartConfigs.forEach(config => {
             if (!config.obj) return;
             const page = createPage(config.name);
@@ -643,70 +634,69 @@ window.exportPDF = async function () {
             container.appendChild(page);
         });
 
-        // Table: Expanded to 30 rows + Auto-fit columns
         const table = document.getElementById("metricsTable");
-        if (table && table.querySelector('tbody tr')) {
-            const tablePage = createPage("Full Metrics Table Preview", false);
+        if (table) {
+            const tablePage = createPage("Full Metrics Table Preview");
             const preview = table.cloneNode(true);
-            
             const rows = preview.querySelectorAll("tbody tr");
-            rows.forEach((row, i) => { if (i > 29) row.remove(); });
+            rows.forEach((row, i) => { if (i > 15) row.remove(); });
 
             preview.style.width = "100%";
             preview.style.borderCollapse = "collapse";
-            preview.style.fontSize = "8.5px"; // Reduced font to fit all columns
-            preview.style.tableLayout = "fixed"; // Prevents column overflow
-
+            preview.style.fontSize = "10px";
             preview.querySelectorAll("th, td").forEach(cell => {
                 cell.style.border = "1px solid #ccc";
-                cell.style.padding = "4px 2px";
-                cell.style.wordBreak = "break-all"; // Ensures long IDs don't stretch table
-                cell.style.verticalAlign = "top";
+                cell.style.padding = "6px";
             });
-
             tablePage.appendChild(preview);
             container.appendChild(tablePage);
         }
-    }
-
-    /* ===== OPTION B: SAVED REPORTS VIEW ===== */
-    else if (isReportsActive) {
+    } else if (isReportsView) {
+        /* ===== REPORTS VIEW IMPLEMENTATION ===== */
         const selectedReport = document.getElementById('selectedReport');
+        
+        // Only export if a report is actually expanded/visible
         if (selectedReport && selectedReport.style.display !== 'none') {
-            const title = document.getElementById('reportTitle').innerText;
-            const page = createPage(`Report: ${title}`);
+            const reportTitle = document.getElementById('reportTitle').innerText;
             
+            // 1. Capture Report Chart
             if (reportChart) {
+                const chartPage = createPage(`${reportTitle} - Analysis`);
                 const img = document.createElement("img");
                 img.src = reportChart.toBase64Image();
-                img.style.width = "90%";
+                img.style.width = "95%";
+                img.style.height = "auto";
                 img.style.border = "1px solid #eee";
-                page.appendChild(img);
+                chartPage.appendChild(img);
+                container.appendChild(chartPage);
             }
 
-            const comments = document.getElementById('commentsList').cloneNode(true);
-            const commentHeader = document.createElement("h3");
-            commentHeader.innerText = "Analyst Comments";
-            commentHeader.style.marginTop = "30px";
-            page.appendChild(commentHeader);
-            page.appendChild(comments);
-            container.appendChild(page);
+            // 2. Capture Comments (The "Extended" list)
+            const commentsList = document.getElementById('commentsList');
+            if (commentsList && commentsList.children.length > 0) {
+                const commentPage = createPage("Report Comments & Feedback");
+                const commentsClone = commentsList.cloneNode(true);
+                
+                // Ensure comments are visible and styled for PDF
+                commentsClone.style.width = "100%";
+                commentsClone.style.textAlign = "left";
+                
+                commentPage.appendChild(commentsClone);
+                container.appendChild(commentPage);
+            }
         } else {
-            const page = createPage("Saved Reports List");
-            const list = document.getElementById('reportsList').cloneNode(true);
-            page.appendChild(list);
-            container.appendChild(page);
+            alert("Please select and expand a report first to export it.");
+            return;
         }
     }
 
+    // ===== PDF RENDER ENGINE =====
     document.body.appendChild(container);
-    
-    // Increased wait time for 30 rows to layout properly
-    await new Promise(r => setTimeout(r, 800));
+    await new Promise(r => setTimeout(r, 500));
 
     const opt = {
-        margin: 0.2,
-        filename: isMetricsActive ? "metrics-full-report.pdf" : "saved-report.pdf",
+        margin: 0,
+        filename: isMetricsView ? "metrics-summary.pdf" : "report-details.pdf",
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { 
             scale: 2, 
@@ -722,8 +712,6 @@ window.exportPDF = async function () {
 
     try {
         await html2pdf().set(opt).from(container).save();
-    } catch (err) {
-        console.error("PDF Export Error:", err);
     } finally {
         document.body.removeChild(container);
     }
